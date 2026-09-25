@@ -246,69 +246,7 @@ npm run dev
 
 ## Deploy en Cloudflare Pages
 
-### Opción A: Deploy Automático con GitHub Actions (Recomendado)
-
-El proyecto incluye un workflow de GitHub Actions que despliega automáticamente en Cloudflare Pages cada vez que haces push a la rama `main` o `master`.
-
-#### Configuración inicial:
-
-1. **Sube tu código a GitHub**
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git branch -M main
-   git remote add origin https://github.com/tu-usuario/j21-store.git
-   git push -u origin main
-   ```
-
-2. **Obtén las credenciales de Cloudflare**
-   - Ve a [Cloudflare Dashboard](https://dash.cloudflare.com)
-   - Haz clic en tu perfil (esquina superior derecha) > **My Profile** > **API Tokens**
-   - Crea un token con la plantilla **Edit Cloudflare Workers** o crea uno personalizado con estos permisos:
-     - Account > Cloudflare Pages > Edit
-     - Account > Cloudflare D1 > Edit (si usas D1)
-   - Copia el **API Token** generado
-
-3. **Obtén tu Account ID**
-   - En Cloudflare Dashboard, en la página principal verás tu **Account ID** en el panel lateral derecho
-   - Cópialo
-
-4. **Configura los Secrets en GitHub**
-   - Ve a tu repositorio en GitHub
-   - **Settings** > **Secrets and variables** > **Actions** > **New repository secret**
-   - Agrega estos tres secrets:
-
-   | Secret Name | Value |
-   |-------------|-------|
-   | `CLOUDFLARE_API_TOKEN` | Tu API Token de Cloudflare |
-   | `CLOUDFLARE_ACCOUNT_ID` | Tu Account ID de Cloudflare |
-   | `VITE_SUPABASE_URL` | `https://tu-proyecto.supabase.co` |
-   | `VITE_SUPABASE_ANON_KEY` | Tu anon key de Supabase |
-
-5. **Crea el proyecto en Cloudflare Pages**
-   - Ve a **Workers & Pages** > **Create** > **Pages** > **Upload assets**
-   - Nombre del proyecto: `j21-store`
-   - No necesitas subir nada manualmente, el workflow lo hará automáticamente
-
-6. **Prueba el deploy automático**
-   ```bash
-   git add .
-   git commit -m "Configure auto-deploy"
-   git push origin main
-   ```
-   - Ve a la pestaña **Actions** en GitHub para ver el progreso del deploy
-   - En 2-3 minutos tu sitio estará disponible en: `https://j21-store.pages.dev`
-
-#### Ventajas del deploy automático:
-- ✅ Deploy automático en cada push a `main` o `master`
-- ✅ Preview deployments para pull requests
-- ✅ Historial de deployments en GitHub Actions
-- ✅ Rollback fácil si algo sale mal
-
-### Opción B: Conectar repositorio directamente (Sin GitHub Actions)
-
-Si prefieres que Cloudflare maneje el deploy directamente:
+### Opción A: Conectar repositorio (recomendado)
 
 1. Sube tu código a GitHub/GitLab.
 2. Ve a [Cloudflare Dashboard](https://dash.cloudflare.com) > **Workers & Pages** > **Create** > **Pages** > **Connect to Git**.
@@ -322,36 +260,15 @@ Si prefieres que Cloudflare maneje el deploy directamente:
    - `VITE_SUPABASE_ANON_KEY` = tu anon key de Supabase
 6. Haz clic en **Save and Deploy**.
 
-### Opción C: Deploy manual con Wrangler CLI
+### Opción B: Deploy directo con Wrangler
 
 ```bash
-# Instalar Wrangler globalmente (solo la primera vez)
-npm install -g wrangler
-
-# Login en Cloudflare
-wrangler login
-
-# Build del proyecto
 npm run build
-
-# Deploy a producción
-wrangler pages deploy dist --project-name j21-store
-
-# Deploy a preview (para testing)
-wrangler pages deploy dist --project-name j21-store --branch preview
+npx wrangler pages deploy dist --project-name j21-store
 ```
 
-### Variables de entorno
+### Variables de entorno en Cloudflare Pages
 
-#### En GitHub Actions (Secrets):
-| Variable | Descripción |
-|----------|-------------|
-| `CLOUDFLARE_API_TOKEN` | Token de API de Cloudflare con permisos de Pages |
-| `CLOUDFLARE_ACCOUNT_ID` | ID de tu cuenta de Cloudflare |
-| `VITE_SUPABASE_URL` | URL de tu proyecto en Supabase |
-| `VITE_SUPABASE_ANON_KEY` | Clave anónima de Supabase (pública) |
-
-#### En Cloudflare Pages (si usas Opción B):
 Ve a tu proyecto en Cloudflare Pages > **Settings** > **Environment variables** y agrega:
 
 | Variable | Valor |
