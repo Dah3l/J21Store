@@ -161,14 +161,27 @@ export default function AdminDashboard() {
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar este producto?')) return;
     
+    console.log('Eliminando producto con ID:', id);
+    
     // Obtener el producto para eliminar su imagen del storage
     const productToDelete = products.find(p => p.id === id);
+    console.log('Producto a eliminar:', productToDelete);
+    
     if (productToDelete?.image_url) {
+      console.log('Producto tiene imagen, intentando eliminar del storage');
       await deleteImageFromStorage(productToDelete.image_url);
+    } else {
+      console.log('Producto no tiene imagen o image_url está vacío');
     }
     
     const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) { alert('Error al eliminar: ' + error.message); return; }
+    if (error) { 
+      console.error('Error al eliminar producto de la base de datos:', error);
+      alert('Error al eliminar: ' + error.message); 
+      return; 
+    }
+    
+    console.log('Producto eliminado exitosamente de la base de datos');
     fetchProducts();
   };
 
@@ -192,22 +205,42 @@ export default function AdminDashboard() {
 
   // Helper: Extraer el path del archivo desde la URL de Supabase Storage
   const extractFilePath = (url: string): string | null => {
-    if (!url || !url.includes('/storage/v1/object/public/')) return null;
+    if (!url) {
+      console.log('URL vacía, no se puede extraer path');
+      return null;
+    }
+    
+    // La URL tiene el formato: https://xxx.supabase.co/storage/v1/object/public/jerseys/products/filename.jpg
+    // Necesitamos extraer: products/filename.jpg
     const match = url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)/);
-    return match ? match[1] : null;
+    const filePath = match ? match[1] : null;
+    
+    console.log('Extracting file path:', { url, filePath });
+    return filePath;
   };
 
   // Helper: Eliminar archivo del bucket de Supabase Storage
   const deleteImageFromStorage = async (imageUrl: string) => {
+    console.log('Intentando eliminar imagen:', imageUrl);
+    
     const filePath = extractFilePath(imageUrl);
-    if (!filePath) return;
+    if (!filePath) {
+      console.warn('No se pudo extraer el path del archivo');
+      return;
+    }
 
-    const { error } = await supabase.storage
+    console.log('Eliminando archivo del storage:', filePath);
+    
+    const { data, error } = await supabase.storage
       .from('jerseys')
       .remove([filePath]);
 
     if (error) {
-      console.warn('Error al eliminar imagen del storage:', error.message);
+      console.error('Error al eliminar imagen del storage:', error);
+      console.error('Error message:', error.message);
+      console.error('Error name:', error.name);
+    } else {
+      console.log('Imagen eliminada exitosamente:', data);
     }
   };
 
