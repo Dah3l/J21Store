@@ -13,7 +13,6 @@ export interface Product {
   team: string;
   price: number;
   image_url: string;
-  stock: number; // Stock global (opcional, para compatibilidad)
   created_at: string;
   variants?: ProductVariant[];
 }

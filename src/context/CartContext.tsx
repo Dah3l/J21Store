@@ -43,7 +43,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const getRemainingStock = (product: Product, player?: string, size?: string): number => {
     const inCart = getQuantityInCart(product.id, player, size);
     
-    // Si hay jugador seleccionado, usar el stock de la variante
+    // Usar el stock de la variante
     if (player && product.variants) {
       const variant = product.variants.find(v => v.player_name === player);
       if (variant) {
@@ -51,8 +51,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     }
     
-    // Fallback al stock global del producto
-    return Math.max(0, product.stock - inCart);
+    // Si no hay variante o jugador, no hay stock disponible
+    return 0;
   };
 
   const addItem = (product: Product, player?: string, size?: string): boolean => {
@@ -96,7 +96,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!item) return;
 
     // Determinar el stock máximo basado en la variante
-    let maxQuantity = item.product.stock;
+    let maxQuantity = 0;
     if (player && item.product.variants) {
       const variant = item.product.variants.find(v => v.player_name === player);
       if (variant) {

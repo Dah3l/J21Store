@@ -38,7 +38,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                 const itemKey = `${item.product.id}-${item.selectedPlayer || ''}-${item.selectedSize || ''}`;
                 
                 // Calcular stock máximo para esta variante específica
-                let maxStock = item.product.stock;
+                let maxStock = 0;
                 if (item.selectedPlayer && item.product.variants) {
                   const variant = item.product.variants.find(v => v.player_name === item.selectedPlayer);
                   if (variant) {
