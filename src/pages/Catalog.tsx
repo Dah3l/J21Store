@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { Product, SIZES } from '../types';
 import ProductCard from '../components/ProductCard';
 import { useBusiness } from '../context/BusinessContext';
-import FAQ from '../components/FAQ';
+import InfoMenu from '../components/InfoMenu';
 
 export default function Catalog() {
   const { settings } = useBusiness();
@@ -153,8 +153,8 @@ export default function Catalog() {
         </p>
       )}
 
-      {/* FAQ Section */}
-      <FAQ />
+      {/* Info Menu Section */}
+      <InfoMenu />
     </div>
   );
 }
