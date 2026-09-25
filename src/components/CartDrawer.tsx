@@ -34,8 +34,10 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                 <p className="text-sm mt-1">Agrega camisetas para empezar</p>
               </div>
             ) : (
-              items.map(item => (
-                <div key={item.product.id} className="flex gap-3 bg-zinc-800 rounded-lg p-3">
+              items.map((item, index) => {
+                const itemKey = `${item.product.id}-${item.selectedPlayer || ''}-${item.selectedSize || ''}`;
+                return (
+                <div key={itemKey} className="flex gap-3 bg-zinc-800 rounded-lg p-3">
                   <JerseyImage
                     src={item.product.image_url}
                     alt={item.product.name}
@@ -43,16 +45,22 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                   />
                   <div className="flex-1 min-w-0">
                     <h4 className="text-white text-sm font-semibold truncate">{item.product.name}</h4>
-                    <p className="text-zinc-400 text-xs">{item.product.team} · Talla {item.product.size}</p>
+                    <p className="text-zinc-400 text-xs">{item.product.team}</p>
+                    {item.selectedPlayer && (
+                      <p className="text-emerald-400 text-xs">👤 {item.selectedPlayer}</p>
+                    )}
+                    {item.selectedSize && (
+                      <p className="text-zinc-400 text-xs">📏 Talla: {item.selectedSize}</p>
+                    )}
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedPlayer, item.selectedSize)}
                           className="w-6 h-6 rounded bg-zinc-700 text-white text-sm flex items-center justify-center hover:bg-zinc-600"
                         >−</button>
                         <span className="text-white text-sm w-5 text-center">{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedPlayer, item.selectedSize)}
                           disabled={item.quantity >= item.product.stock}
                           title={item.quantity >= item.product.stock ? 'Stock máximo alcanzado' : ''}
                           className={`w-6 h-6 rounded text-sm flex items-center justify-center ${
@@ -69,7 +77,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     )}
                   </div>
                   <button
-                    onClick={() => removeItem(item.product.id)}
+                    onClick={() => removeItem(item.product.id, item.selectedPlayer, item.selectedSize)}
                     className="text-zinc-500 hover:text-red-400 self-start"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -77,7 +85,8 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     </svg>
                   </button>
                 </div>
-              ))
+              );
+              })
             )}
           </div>
 

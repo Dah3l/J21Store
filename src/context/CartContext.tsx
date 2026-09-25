@@ -4,14 +4,14 @@ import { useBusiness } from './BusinessContext';
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product) => boolean; // returns true if added, false if stock limit reached
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addItem: (product: Product, player?: string, size?: string) => boolean;
+  removeItem: (productId: string, player?: string, size?: string) => void;
+  updateQuantity: (productId: string, quantity: number, player?: string, size?: string) => void;
   clearCart: () => void;
   total: number;
   itemCount: number;
-  getQuantityInCart: (productId: string) => number;
-  getRemainingStock: (product: Product) => number;
+  getQuantityInCart: (productId: string, player?: string, size?: string) => number;
+  getRemainingStock: (product: Product, player?: string, size?: string) => number;
   generateWhatsAppMessage: () => string;
   openWhatsApp: () => void;
 }
@@ -29,49 +29,60 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('j21-cart', JSON.stringify(items));
   }, [items]);
 
-  const getQuantityInCart = (productId: string): number => {
-    const item = items.find(i => i.product.id === productId);
+  // Helper para crear clave única de item (producto + jugador + talla)
+  const getItemKey = (productId: string, player?: string, size?: string): string => {
+    return `${productId}-${player || ''}-${size || ''}`;
+  };
+
+  const getQuantityInCart = (productId: string, player?: string, size?: string): number => {
+    const key = getItemKey(productId, player, size);
+    const item = items.find(i => getItemKey(i.product.id, i.selectedPlayer, i.selectedSize) === key);
     return item ? item.quantity : 0;
   };
 
-  const getRemainingStock = (product: Product): number => {
-    const inCart = getQuantityInCart(product.id);
+  const getRemainingStock = (product: Product, player?: string, size?: string): number => {
+    const inCart = getQuantityInCart(product.id, player, size);
     return Math.max(0, product.stock - inCart);
   };
 
-  const addItem = (product: Product): boolean => {
+  const addItem = (product: Product, player?: string, size?: string): boolean => {
     // Verificar si hay stock disponible
-    const remaining = getRemainingStock(product);
+    const remaining = getRemainingStock(product, player, size);
     if (remaining <= 0) {
       return false; // Stock limit reached
     }
 
     setItems(prev => {
-      const existing = prev.find(item => item.product.id === product.id);
+      const key = getItemKey(product.id, player, size);
+      const existing = prev.find(item => getItemKey(item.product.id, item.selectedPlayer, item.selectedSize) === key);
+      
       if (existing) {
         return prev.map(item =>
-          item.product.id === product.id
+          getItemKey(item.product.id, item.selectedPlayer, item.selectedSize) === key
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      return [...prev, { product, quantity: 1 }];
+      return [...prev, { product, quantity: 1, selectedPlayer: player, selectedSize: size }];
     });
     return true;
   };
 
-  const removeItem = (productId: string) => {
-    setItems(prev => prev.filter(item => item.product.id !== productId));
+  const removeItem = (productId: string, player?: string, size?: string) => {
+    const key = getItemKey(productId, player, size);
+    setItems(prev => prev.filter(item => getItemKey(item.product.id, item.selectedPlayer, item.selectedSize) !== key));
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number, player?: string, size?: string) => {
+    const key = getItemKey(productId, player, size);
+    
     if (quantity <= 0) {
-      removeItem(productId);
+      removeItem(productId, player, size);
       return;
     }
 
     // Obtener el producto para verificar stock
-    const item = items.find(i => i.product.id === productId);
+    const item = items.find(i => getItemKey(i.product.id, i.selectedPlayer, i.selectedSize) === key);
     if (!item) return;
 
     // Limitar al stock disponible
@@ -80,7 +91,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     setItems(prev =>
       prev.map(i =>
-        i.product.id === productId ? { ...i, quantity: clampedQuantity } : i
+        getItemKey(i.product.id, i.selectedPlayer, i.selectedSize) === key ? { ...i, quantity: clampedQuantity } : i
       )
     );
   };
@@ -94,7 +105,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     let message = `🛒 *Nuevo Pedido - ${settings.business_name}*\n\n`;
     items.forEach(item => {
       message += `• ${item.product.name} (${item.product.team})\n`;
-      message += `  Talla: ${item.product.size} | Cant: ${item.quantity} | $${item.product.price * item.quantity}\n\n`;
+      if (item.selectedPlayer) {
+        message += `  Jugador: ${item.selectedPlayer}\n`;
+      }
+      if (item.selectedSize) {
+        message += `  Talla: ${item.selectedSize}`;
+      }
+      message += ` | Cant: ${item.quantity} | $${item.product.price * item.quantity}\n\n`;
     });
     message += `💰 *Total: $${total}*\n\n`;
     message += '¡Hola! Me gustaría hacer este pedido.';

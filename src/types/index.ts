@@ -1,17 +1,27 @@
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  player_name: string;
+  sizes: string[];
+  created_at: string;
+}
+
 export interface Product {
   id: string;
   name: string;
   team: string;
-  size: string;
   price: number;
   image_url: string;
   stock: number;
   created_at: string;
+  variants?: ProductVariant[];
 }
 
 export interface CartItem {
   product: Product;
   quantity: number;
+  selectedPlayer?: string;
+  selectedSize?: string;
 }
 
 export interface Order {

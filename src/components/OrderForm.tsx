@@ -50,7 +50,13 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
     
     items.forEach(item => {
       message += `• ${item.product.name} (${item.product.team})\n`;
-      message += `  Talla: ${item.product.size} | Cant: ${item.quantity} | $${(item.product.price * item.quantity).toLocaleString()}\n\n`;
+      if (item.selectedPlayer) {
+        message += `  Jugador: ${item.selectedPlayer}\n`;
+      }
+      if (item.selectedSize) {
+        message += `  Talla: ${item.selectedSize}`;
+      }
+      message += ` | Cant: ${item.quantity} | $${(item.product.price * item.quantity).toLocaleString()}\n\n`;
     });
     
     message += `💰 *Subtotal: $${total.toLocaleString()}*\n`;

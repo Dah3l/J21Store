@@ -1,12 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Product, SIZES } from '../types';
+import { Product, ProductVariant, SIZES } from '../types';
 import JerseyImage from '../components/JerseyImage';
 import AdminSettings from './AdminSettings';
 import AdminDeliveryZones from './AdminDeliveryZones';
 
 type AdminTab = 'products' | 'settings' | 'delivery';
+
+interface VariantForm {
+  id?: string;
+  player_name: string;
+  sizes: string[];
+}
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>('products');
@@ -22,10 +28,10 @@ export default function AdminDashboard() {
   // Form state
   const [name, setName] = useState('');
   const [team, setTeam] = useState('');
-  const [size, setSize] = useState<string>(SIZES[0] as string);
   const [price, setPrice] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [stock, setStock] = useState('');
+  const [variants, setVariants] = useState<VariantForm[]>([]);
 
   useEffect(() => {
     checkAuth();
@@ -43,7 +49,7 @@ export default function AdminDashboard() {
     setLoading(true);
     const { data, error } = await supabase
       .from('products')
-      .select('*')
+      .select('*, variants:product_variants(*)')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -55,24 +61,56 @@ export default function AdminDashboard() {
   const resetForm = () => {
     setName('');
     setTeam('');
-    setSize(SIZES[0] as string);
     setPrice('');
     setImageUrl('');
     setStock('');
+    setVariants([]);
     setEditingProduct(null);
     setShowForm(false);
   };
 
+  const addVariant = () => {
+    setVariants([...variants, { player_name: '', sizes: [] }]);
+  };
+
+  const removeVariant = (index: number) => {
+    setVariants(variants.filter((_, i) => i !== index));
+  };
+
+  const updateVariant = (index: number, field: keyof VariantForm, value: string | string[]) => {
+    const updated = [...variants];
+    updated[index] = { ...updated[index], [field]: value };
+    setVariants(updated);
+  };
+
+  const toggleSize = (variantIndex: number, size: string) => {
+    const updated = [...variants];
+    const currentSizes = updated[variantIndex].sizes;
+    if (currentSizes.includes(size)) {
+      updated[variantIndex].sizes = currentSizes.filter(s => s !== size);
+    } else {
+      updated[variantIndex].sizes = [...currentSizes, size];
+    }
+    setVariants(updated);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (variants.length === 0) {
+      alert('Debes agregar al menos una variante (jugador + tallas)');
+      return;
+    }
+
     const productData = {
       name,
       team,
-      size,
       price: Number(price),
       image_url: imageUrl,
       stock: Number(stock),
     };
+
+    let productId: string;
 
     if (editingProduct) {
       const { error } = await supabase
@@ -80,11 +118,34 @@ export default function AdminDashboard() {
         .update(productData)
         .eq('id', editingProduct.id);
       if (error) { alert('Error al actualizar: ' + error.message); return; }
+      productId = editingProduct.id;
+
+      // Eliminar variantes anteriores
+      await supabase.from('product_variants').delete().eq('product_id', productId);
     } else {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('products')
-        .insert([productData]);
+        .insert([productData])
+        .select()
+        .single();
       if (error) { alert('Error al crear: ' + error.message); return; }
+      productId = data.id;
+    }
+
+    // Insertar nuevas variantes
+    const variantsToInsert = variants
+      .filter(v => v.player_name.trim() && v.sizes.length > 0)
+      .map(v => ({
+        product_id: productId,
+        player_name: v.player_name.trim(),
+        sizes: v.sizes,
+      }));
+
+    if (variantsToInsert.length > 0) {
+      const { error } = await supabase
+        .from('product_variants')
+        .insert(variantsToInsert);
+      if (error) { alert('Error al guardar variantes: ' + error.message); return; }
     }
 
     resetForm();
@@ -102,10 +163,16 @@ export default function AdminDashboard() {
     setEditingProduct(product);
     setName(product.name);
     setTeam(product.team);
-    setSize(product.size);
     setPrice(String(product.price));
     setImageUrl(product.image_url);
     setStock(String(product.stock));
+    setVariants(
+      (product.variants || []).map(v => ({
+        id: v.id,
+        player_name: v.player_name,
+        sizes: v.sizes,
+      }))
+    );
     setShowForm(true);
   };
 
@@ -132,7 +199,6 @@ export default function AdminDashboard() {
       .from('jerseys')
       .getPublicUrl(filePath);
 
-    // Agregar cache-busting para que la imagen nueva se cargue correctamente
     setImageUrl(`${publicUrl}?t=${Date.now()}`);
     setUploading(false);
   };
@@ -199,7 +265,6 @@ export default function AdminDashboard() {
         <AdminDeliveryZones />
       ) : (
         <>
-          {/* Products section */}
           {/* Search Bar */}
           <div className="mb-4">
             <div className="relative">
@@ -210,12 +275,7 @@ export default function AdminDashboard() {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
                 type="text"
@@ -242,17 +302,8 @@ export default function AdminDashboard() {
               {products.filter(p => {
                 if (!searchTerm) return true;
                 const term = searchTerm.toLowerCase();
-                return p.name.toLowerCase().includes(term) || 
-                       p.team.toLowerCase().includes(term) ||
-                       p.size.toLowerCase().includes(term);
-              }).length} producto{products.filter(p => {
-                if (!searchTerm) return true;
-                const term = searchTerm.toLowerCase();
-                return p.name.toLowerCase().includes(term) || 
-                       p.team.toLowerCase().includes(term) ||
-                       p.size.toLowerCase().includes(term);
-              }).length !== 1 ? 's' : ''}
-              {searchTerm && ` (de ${products.length} total)`}
+                return p.name.toLowerCase().includes(term) || p.team.toLowerCase().includes(term);
+              }).length} producto(s)
             </p>
             <button
               onClick={() => { resetForm(); setShowForm(true); }}
@@ -299,14 +350,16 @@ export default function AdminDashboard() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-zinc-400 text-xs font-medium mb-1 block">Talla</label>
-                        <select
-                          value={size}
-                          onChange={e => setSize(e.target.value)}
+                        <label className="text-zinc-400 text-xs font-medium mb-1 block">Precio ($)</label>
+                        <input
+                          type="number"
+                          value={price}
+                          onChange={e => setPrice(e.target.value)}
+                          required
+                          min="0"
                           className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none"
-                        >
-                          {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
+                          placeholder="25000"
+                        />
                       </div>
                       <div>
                         <label className="text-zinc-400 text-xs font-medium mb-1 block">Stock</label>
@@ -320,18 +373,6 @@ export default function AdminDashboard() {
                           placeholder="10"
                         />
                       </div>
-                    </div>
-                    <div>
-                      <label className="text-zinc-400 text-xs font-medium mb-1 block">Precio ($)</label>
-                      <input
-                        type="number"
-                        value={price}
-                        onChange={e => setPrice(e.target.value)}
-                        required
-                        min="0"
-                        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none"
-                        placeholder="25000"
-                      />
                     </div>
                     <div>
                       <label className="text-zinc-400 text-xs font-medium mb-1 block">Imagen</label>
@@ -363,6 +404,68 @@ export default function AdminDashboard() {
                         <JerseyImage src={imageUrl} alt="Preview" className="mt-2 w-20 h-20 object-cover rounded-lg border border-zinc-700" />
                       )}
                     </div>
+
+                    {/* Variantes */}
+                    <div className="border-t border-zinc-800 pt-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <label className="text-zinc-400 text-xs font-medium">
+                          Jugadores y tallas
+                        </label>
+                        <button
+                          type="button"
+                          onClick={addVariant}
+                          className="text-emerald-400 hover:text-emerald-300 text-xs font-medium"
+                        >
+                          + Agregar jugador
+                        </button>
+                      </div>
+
+                      {variants.length === 0 && (
+                        <p className="text-zinc-500 text-xs text-center py-3">
+                          No hay jugadores agregados. Hacé clic en "+ Agregar jugador"
+                        </p>
+                      )}
+
+                      {variants.map((variant, index) => (
+                        <div key={index} className="bg-zinc-800 rounded-lg p-3 mb-3">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-zinc-300 text-xs font-medium">Jugador {index + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeVariant(index)}
+                              className="text-red-400 hover:text-red-300 text-xs"
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            value={variant.player_name}
+                            onChange={e => updateVariant(index, 'player_name', e.target.value)}
+                            placeholder="Nombre del jugador"
+                            className="w-full bg-zinc-700 border border-zinc-600 rounded px-3 py-2 text-white text-sm mb-2 focus:border-emerald-500 focus:outline-none"
+                          />
+                          <p className="text-zinc-400 text-xs mb-1">Tallas disponibles:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {SIZES.map(size => (
+                              <button
+                                key={size}
+                                type="button"
+                                onClick={() => toggleSize(index, size)}
+                                className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                                  variant.sizes.includes(size)
+                                    ? 'bg-emerald-500 text-black'
+                                    : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'
+                                }`}
+                              >
+                                {size}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
                     <div className="flex gap-3 pt-2">
                       <button
                         type="submit"
@@ -391,7 +494,6 @@ export default function AdminDashboard() {
             <div className="text-center py-12">
               <p className="text-4xl mb-3">📦</p>
               <p className="text-zinc-400">No hay productos todavía</p>
-              <p className="text-zinc-500 text-sm mt-1">Creá tu primer producto</p>
             </div>
           ) : (
             <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
@@ -401,8 +503,7 @@ export default function AdminDashboard() {
                     <tr className="border-b border-zinc-800">
                       <th className="text-left text-zinc-400 text-xs font-medium px-4 py-3">Imagen</th>
                       <th className="text-left text-zinc-400 text-xs font-medium px-4 py-3">Producto</th>
-                      <th className="text-left text-zinc-400 text-xs font-medium px-4 py-3 hidden sm:table-cell">Equipo</th>
-                      <th className="text-left text-zinc-400 text-xs font-medium px-4 py-3 hidden md:table-cell">Talla</th>
+                      <th className="text-left text-zinc-400 text-xs font-medium px-4 py-3 hidden md:table-cell">Variantes</th>
                       <th className="text-left text-zinc-400 text-xs font-medium px-4 py-3">Precio</th>
                       <th className="text-left text-zinc-400 text-xs font-medium px-4 py-3">Stock</th>
                       <th className="text-right text-zinc-400 text-xs font-medium px-4 py-3">Acciones</th>
@@ -412,9 +513,7 @@ export default function AdminDashboard() {
                     {products.filter(product => {
                       if (!searchTerm) return true;
                       const term = searchTerm.toLowerCase();
-                      return product.name.toLowerCase().includes(term) || 
-                             product.team.toLowerCase().includes(term) ||
-                             product.size.toLowerCase().includes(term);
+                      return product.name.toLowerCase().includes(term) || product.team.toLowerCase().includes(term);
                     }).map(product => (
                       <tr key={product.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
                         <td className="px-4 py-3">
@@ -426,12 +525,12 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-4 py-3">
                           <p className="text-white text-sm font-medium truncate max-w-[150px]">{product.name}</p>
-                        </td>
-                        <td className="px-4 py-3 hidden sm:table-cell">
-                          <span className="text-zinc-300 text-sm">{product.team}</span>
+                          <p className="text-zinc-400 text-xs">{product.team}</p>
                         </td>
                         <td className="px-4 py-3 hidden md:table-cell">
-                          <span className="text-zinc-300 text-sm">{product.size}</span>
+                          <p className="text-zinc-300 text-xs">
+                            {product.variants?.length || 0} jugador{(product.variants?.length || 0) !== 1 ? 'es' : ''}
+                          </p>
                         </td>
                         <td className="px-4 py-3">
                           <span className="text-white text-sm font-semibold">${product.price.toLocaleString()}</span>
