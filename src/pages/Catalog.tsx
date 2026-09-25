@@ -14,10 +14,17 @@ export default function Catalog() {
   const [filterSize, setFilterSize] = useState('');
   const [filterMaxPrice, setFilterMaxPrice] = useState<number>(0);
   const [teams, setTeams] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 12; // 3 filas × 4 columnas
 
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  // Resetear página cuando cambian filtros o búsqueda
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterTeam, filterSize, filterMaxPrice]);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -61,6 +68,12 @@ export default function Catalog() {
   };
 
   const hasActiveFilters = searchTerm || filterTeam || filterSize || filterMaxPrice > 0;
+
+  // Paginación
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -186,18 +199,60 @@ export default function Catalog() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      )}
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {paginatedProducts.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
 
-      {/* Results count */}
-      {!loading && filteredProducts.length > 0 && (
-        <p className="text-center text-zinc-500 text-sm mt-6">
-          {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
-        </p>
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8">
+              {/* Previous Button */}
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="w-10 h-10 rounded-lg flex items-center justify-center bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-emerald-500/50 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-zinc-800 disabled:hover:text-zinc-400 transition-all"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              {/* Page Numbers */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-semibold transition-all ${
+                    currentPage === page
+                      ? 'bg-emerald-500 text-black'
+                      : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-emerald-500/50'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+
+              {/* Next Button */}
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="w-10 h-10 rounded-lg flex items-center justify-center bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-emerald-500/50 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-zinc-800 disabled:hover:text-zinc-400 transition-all"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          {/* Results count */}
+          <p className="text-center text-zinc-500 text-sm mt-4">
+            Mostrando {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)} de {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''}
+          </p>
+        </>
       )}
 
       {/* Info Menu Section */}
