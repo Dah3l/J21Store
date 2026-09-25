@@ -77,6 +77,11 @@ export default function Catalog() {
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Hero */}
       <div className="text-center mb-8">
+        <img 
+          src="https://fwempizdkfvorzfzjgtg.supabase.co/storage/v1/object/public/jerseys/products/1790305089491-hn6warfj9cb.jpg"
+          alt="Logo"
+          className="w-24 h-24 sm:w-32 sm:h-32 object-contain mx-auto mb-4 rounded-2xl shadow-lg shadow-emerald-500/10"
+        />
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
           {settings.business_name}
         </h1>
