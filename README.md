@@ -236,6 +236,6 @@ j21-store/
 
 ## Notas
 
-- El archivo `public/_redirects` es necesario para que las rutas de la SPA funcionen correctamente en Cloudflare Pages (redirige todas las rutas a `index.html`).
+- Cloudflare Pages maneja automáticamente el fallback a `index.html` para SPAs estáticas, no es necesario un archivo `_redirects`.
 - La `anon key` de Supabase es **pública** y segura para usar en el frontend. La seguridad real está en RLS (Row Level Security) y en la `service_role key` (que nunca debe exponerse).
 - Para cambiar el número de WhatsApp, edita la constante `WHATSAPP_NUMBER` en `src/types/index.ts`.
