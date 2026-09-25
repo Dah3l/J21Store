@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { CartItem, Product, WHATSAPP_NUMBER } from '../types';
+import { CartItem, Product, DEFAULT_WHATSAPP_NUMBER } from '../types';
+import { useBusiness } from './BusinessContext';
 
 interface CartContextType {
   items: CartItem[];
@@ -16,6 +17,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { settings } = useBusiness();
   const [items, setItems] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('j21-cart');
     return saved ? JSON.parse(saved) : [];
@@ -61,7 +63,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const generateWhatsAppMessage = () => {
-    let message = '🛒 *Nuevo Pedido - J21 Store*\n\n';
+    let message = `🛒 *Nuevo Pedido - ${settings.business_name}*\n\n`;
     items.forEach(item => {
       message += `• ${item.product.name} (${item.product.team})\n`;
       message += `  Talla: ${item.product.size} | Cant: ${item.quantity} | $${item.product.price * item.quantity}\n\n`;
@@ -73,7 +75,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const openWhatsApp = () => {
     const message = generateWhatsAppMessage();
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+    const phone = settings.whatsapp_number || DEFAULT_WHATSAPP_NUMBER;
+    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
   };
 
   return (

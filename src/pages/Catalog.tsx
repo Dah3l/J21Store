@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Product, SIZES } from '../types';
 import ProductCard from '../components/ProductCard';
+import { useBusiness } from '../context/BusinessContext';
 
 export default function Catalog() {
+  const { settings } = useBusiness();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterTeam, setFilterTeam] = useState('');
@@ -54,10 +56,10 @@ export default function Catalog() {
       {/* Hero */}
       <div className="text-center mb-8">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
-          Camisetas de <span className="text-emerald-400">Fútbol</span>
+          {settings.business_name}
         </h1>
         <p className="text-zinc-400 text-sm sm:text-base">
-          Encontrá la camiseta de tu equipo. Pedila fácil por WhatsApp.
+          {settings.description || 'Encontrá la camiseta de tu equipo. Pedila fácil por WhatsApp.'}
         </p>
       </div>
 
