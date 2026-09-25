@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { Product } from '../types';
+import JerseyImage from './JerseyImage';
 
 interface ProductCardProps {
   product: Product;
@@ -19,11 +20,10 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="group bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 hover:border-emerald-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10">
       <div className="aspect-square overflow-hidden bg-zinc-800 relative">
-        <img
-          src={product.image_url || '/placeholder-jersey.png'}
+        <JerseyImage
+          src={product.image_url}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          loading="lazy"
         />
         {product.stock <= 0 && (
           <div className="absolute inset-0 bg-black/70 flex items-center justify-center">

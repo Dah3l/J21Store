@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
+import JerseyImage from './JerseyImage';
 
 export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { items, removeItem, updateQuantity, total, clearCart, openWhatsApp } = useCart();
@@ -33,8 +34,8 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
             ) : (
               items.map(item => (
                 <div key={item.product.id} className="flex gap-3 bg-zinc-800 rounded-lg p-3">
-                  <img
-                    src={item.product.image_url || '/placeholder-jersey.png'}
+                  <JerseyImage
+                    src={item.product.image_url}
                     alt={item.product.name}
                     className="w-16 h-16 object-cover rounded-lg"
                   />

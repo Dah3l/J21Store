@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Product, SIZES } from '../types';
+import JerseyImage from '../components/JerseyImage';
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -125,7 +126,8 @@ export default function AdminDashboard() {
       .from('jerseys')
       .getPublicUrl(filePath);
 
-    setImageUrl(publicUrl);
+    // Agregar cache-busting para que la imagen nueva se cargue correctamente
+    setImageUrl(`${publicUrl}?t=${Date.now()}`);
     setUploading(false);
   };
 
@@ -256,7 +258,7 @@ export default function AdminDashboard() {
                     </button>
                   </div>
                   {imageUrl && (
-                    <img src={imageUrl} alt="Preview" className="mt-2 w-20 h-20 object-cover rounded-lg border border-zinc-700" />
+                    <JerseyImage src={imageUrl} alt="Preview" className="mt-2 w-20 h-20 object-cover rounded-lg border border-zinc-700" />
                   )}
                 </div>
                 <div className="flex gap-3 pt-2">
@@ -308,8 +310,8 @@ export default function AdminDashboard() {
                 {products.map(product => (
                   <tr key={product.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
                     <td className="px-4 py-3">
-                      <img
-                        src={product.image_url || '/placeholder-jersey.png'}
+                      <JerseyImage
+                        src={product.image_url}
                         alt={product.name}
                         className="w-10 h-10 object-cover rounded-lg"
                       />
