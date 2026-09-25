@@ -30,7 +30,7 @@ export default function Catalog() {
     setLoading(true);
     const { data, error } = await supabase
       .from('products')
-      .select('*')
+      .select('*, variants:product_variants(*)')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -51,11 +51,12 @@ export default function Catalog() {
       const term = searchTerm.toLowerCase();
       const matchesSearch = 
         p.name.toLowerCase().includes(term) ||
-        p.team.toLowerCase().includes(term);
+        p.team.toLowerCase().includes(term) ||
+        (p.variants && p.variants.some(v => v.player_name.toLowerCase().includes(term)));
       if (!matchesSearch) return false;
     }
     if (filterTeam && p.team !== filterTeam) return false;
-    if (filterSize && p.size !== filterSize) return false;
+    if (filterSize && (!p.variants || !p.variants.some(v => v.sizes.includes(filterSize)))) return false;
     if (filterMaxPrice > 0 && p.price > filterMaxPrice) return false;
     return true;
   });
@@ -263,11 +264,11 @@ export default function Catalog() {
 
 function getDemoProducts(): Product[] {
   return [
-    { id: '1', name: 'Camiseta Local 2024', team: 'Boca Juniors', size: 'M', price: 25000, image_url: '', stock: 5, created_at: '' },
-    { id: '2', name: 'Camiseta Visitante 2024', team: 'River Plate', size: 'L', price: 25000, image_url: '', stock: 3, created_at: '' },
-    { id: '3', name: 'Camiseta Local 2024', team: 'Real Madrid', size: 'M', price: 30000, image_url: '', stock: 8, created_at: '' },
-    { id: '4', name: 'Camiseta Local 2024', team: 'Barcelona', size: 'S', price: 30000, image_url: '', stock: 0, created_at: '' },
-    { id: '5', name: 'Camiseta Alternativa', team: 'PSG', size: 'XL', price: 28000, image_url: '', stock: 2, created_at: '' },
-    { id: '6', name: 'Camiseta Local 2024', team: 'Manchester City', size: 'L', price: 27000, image_url: '', stock: 6, created_at: '' },
+    { id: '1', name: 'Camiseta Local 2024', team: 'Boca Juniors', price: 25000, image_url: '', stock: 5, created_at: '', variants: [{ id: 'v1', product_id: '1', player_name: 'Genérico', sizes: ['M'], created_at: '' }] },
+    { id: '2', name: 'Camiseta Visitante 2024', team: 'River Plate', price: 25000, image_url: '', stock: 3, created_at: '', variants: [{ id: 'v2', product_id: '2', player_name: 'Genérico', sizes: ['L'], created_at: '' }] },
+    { id: '3', name: 'Camiseta Local 2024', team: 'Real Madrid', price: 30000, image_url: '', stock: 8, created_at: '', variants: [{ id: 'v3', product_id: '3', player_name: 'Genérico', sizes: ['M'], created_at: '' }] },
+    { id: '4', name: 'Camiseta Local 2024', team: 'Barcelona', price: 30000, image_url: '', stock: 0, created_at: '', variants: [{ id: 'v4', product_id: '4', player_name: 'Genérico', sizes: ['S'], created_at: '' }] },
+    { id: '5', name: 'Camiseta Alternativa', team: 'PSG', price: 28000, image_url: '', stock: 2, created_at: '', variants: [{ id: 'v5', product_id: '5', player_name: 'Genérico', sizes: ['XL'], created_at: '' }] },
+    { id: '6', name: 'Camiseta Local 2024', team: 'Manchester City', price: 27000, image_url: '', stock: 6, created_at: '', variants: [{ id: 'v6', product_id: '6', player_name: 'Genérico', sizes: ['L'], created_at: '' }] },
   ];
 }
