@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CartItem, DEFAULT_WHATSAPP_NUMBER } from '../types';
 import { useBusiness } from '../context/BusinessContext';
+import { useDelivery } from '../context/DeliveryContext';
 
 interface OrderFormProps {
   isOpen: boolean;
@@ -12,20 +13,38 @@ interface OrderFormProps {
 
 export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: OrderFormProps) {
   const { settings } = useBusiness();
+  const { zones } = useDelivery();
   const [name, setName] = useState('');
-  const [address, setAddress] = useState('');
+  const [selectedZone, setSelectedZone] = useState('');
+  const [customAddress, setCustomAddress] = useState('');
   const [pickupTime, setPickupTime] = useState('');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Calcular precio de envío
+  const getDeliveryPrice = () => {
+    if (selectedZone === 'other') return 0; // Dirección personalizada, precio a definir
+    const zone = zones.find(z => z.id === selectedZone);
+    return zone ? zone.price : 0;
+  };
+
+  const deliveryPrice = getDeliveryPrice();
+  const finalTotal = total + deliveryPrice;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
+    // Determinar la dirección final
+    const zone = zones.find(z => z.id === selectedZone);
+    const finalAddress = selectedZone === 'other' 
+      ? customAddress 
+      : zone?.name || '';
+
     // Generar mensaje de WhatsApp con los datos del formulario
     let message = `🛒 *Nuevo Pedido - ${settings.business_name}*\n\n`;
     message += `👤 *Cliente:* ${name}\n`;
-    message += `📍 *Dirección:* ${address}\n`;
+    message += `📍 *Dirección:* ${finalAddress}\n`;
     message += `🕐 *Hora de retiro:* ${pickupTime}\n\n`;
     message += `📦 *Productos:*\n`;
     
@@ -34,7 +53,15 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
       message += `  Talla: ${item.product.size} | Cant: ${item.quantity} | $${(item.product.price * item.quantity).toLocaleString()}\n\n`;
     });
     
-    message += `💰 *Total: $${total.toLocaleString()}*\n`;
+    message += `💰 *Subtotal: $${total.toLocaleString()}*\n`;
+    
+    if (deliveryPrice > 0) {
+      message += `🚚 *Envío (${zone?.name}): $${deliveryPrice.toLocaleString()}*\n`;
+    } else if (selectedZone === 'other') {
+      message += `🚚 *Envío: A coordinar*\n`;
+    }
+    
+    message += `\n💵 *Total: $${finalTotal.toLocaleString()}*\n`;
     
     if (notes.trim()) {
       message += `\n📝 *Notas:* ${notes}\n`;
@@ -50,7 +77,8 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
     
     // Limpiar formulario y cerrar
     setName('');
-    setAddress('');
+    setSelectedZone('');
+    setCustomAddress('');
     setPickupTime('');
     setNotes('');
     setSubmitting(false);
@@ -95,9 +123,21 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
                 <span className="text-zinc-400 text-sm">Productos:</span>
                 <span className="text-white text-sm font-semibold">{items.length}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-zinc-400 text-sm">Total:</span>
-                <span className="text-emerald-400 text-lg font-bold">${total.toLocaleString()}</span>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-zinc-400 text-sm">Subtotal:</span>
+                <span className="text-white text-sm font-semibold">${total.toLocaleString()}</span>
+              </div>
+              {deliveryPrice > 0 && (
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-zinc-400 text-sm">Envío:</span>
+                  <span className="text-emerald-400 text-sm font-semibold">${deliveryPrice.toLocaleString()}</span>
+                </div>
+              )}
+              <div className="border-t border-zinc-700 pt-2 mt-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-zinc-300 font-semibold">Total:</span>
+                  <span className="text-emerald-400 text-lg font-bold">${finalTotal.toLocaleString()}</span>
+                </div>
               </div>
             </div>
 
@@ -119,17 +159,42 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
 
               <div>
                 <label className="text-zinc-400 text-xs font-medium mb-1 block">
-                  Dirección <span className="text-red-400">*</span>
+                  Zona de entrega <span className="text-red-400">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={address}
-                  onChange={e => setAddress(e.target.value)}
+                <select
+                  value={selectedZone}
+                  onChange={e => setSelectedZone(e.target.value)}
                   required
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-emerald-500 focus:outline-none"
-                  placeholder="Av. Siempre Viva 1234, Buenos Aires"
-                />
+                >
+                  <option value="">Seleccioná tu zona</option>
+                  {zones.map(zone => (
+                    <option key={zone.id} value={zone.id}>
+                      {zone.name} - ${zone.price.toLocaleString()}
+                    </option>
+                  ))}
+                  <option value="other">Otra dirección (escribir manualmente)</option>
+                </select>
               </div>
+
+              {selectedZone === 'other' && (
+                <div>
+                  <label className="text-zinc-400 text-xs font-medium mb-1 block">
+                    Dirección completa <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={customAddress}
+                    onChange={e => setCustomAddress(e.target.value)}
+                    required
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-emerald-500 focus:outline-none"
+                    placeholder="Escribí tu dirección completa"
+                  />
+                  <p className="text-amber-400 text-xs mt-1">
+                    ⚠ El costo de envío se coordinará por WhatsApp
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="text-zinc-400 text-xs font-medium mb-1 block">
@@ -162,7 +227,7 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
               <div className="flex gap-3 pt-2">
                 <button
                   type="submit"
-                  disabled={submitting || !name || !address || !pickupTime}
+                  disabled={submitting || !name || !selectedZone || !pickupTime || (selectedZone === 'other' && !customAddress)}
                   className="flex-1 bg-green-500 hover:bg-green-400 text-black font-bold py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

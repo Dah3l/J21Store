@@ -4,8 +4,9 @@ import { supabase } from '../lib/supabase';
 import { Product, SIZES } from '../types';
 import JerseyImage from '../components/JerseyImage';
 import AdminSettings from './AdminSettings';
+import AdminDeliveryZones from './AdminDeliveryZones';
 
-type AdminTab = 'products' | 'settings';
+type AdminTab = 'products' | 'settings' | 'delivery';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>('products');
@@ -169,6 +170,16 @@ export default function AdminDashboard() {
           📦 Productos
         </button>
         <button
+          onClick={() => setActiveTab('delivery')}
+          className={`flex-1 py-2.5 rounded-md text-sm font-semibold transition-colors ${
+            activeTab === 'delivery'
+              ? 'bg-emerald-500 text-black'
+              : 'text-zinc-400 hover:text-white'
+          }`}
+        >
+          🚚 Envíos
+        </button>
+        <button
           onClick={() => setActiveTab('settings')}
           className={`flex-1 py-2.5 rounded-md text-sm font-semibold transition-colors ${
             activeTab === 'settings'
@@ -176,13 +187,15 @@ export default function AdminDashboard() {
               : 'text-zinc-400 hover:text-white'
           }`}
         >
-          ⚙️ Configuración
+          ⚙️ Config
         </button>
       </div>
 
       {/* Tab Content */}
       {activeTab === 'settings' ? (
         <AdminSettings />
+      ) : activeTab === 'delivery' ? (
+        <AdminDeliveryZones />
       ) : (
         <>
           {/* Products section */}

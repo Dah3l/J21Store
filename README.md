@@ -92,6 +92,96 @@ CREATE POLICY "Solo admin puede ver pedidos"
 CREATE POLICY "Cualquiera puede crear pedidos"
   ON orders FOR INSERT
   WITH CHECK (true);
+
+-- Tabla de configuración del negocio
+CREATE TABLE business_settings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  business_name TEXT NOT NULL DEFAULT 'J21 Store',
+  whatsapp_number TEXT NOT NULL DEFAULT '',
+  email TEXT NOT NULL DEFAULT '',
+  address TEXT NOT NULL DEFAULT '',
+  instagram TEXT NOT NULL DEFAULT '',
+  facebook TEXT NOT NULL DEFAULT '',
+  description TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Insertar configuración inicial
+INSERT INTO business_settings (business_name, description)
+VALUES ('J21 Store', 'Tu tienda de camisetas de fútbol');
+
+ALTER TABLE business_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Configuración visible públicamente"
+  ON business_settings FOR SELECT
+  USING (true);
+
+CREATE POLICY "Solo admin puede insertar configuración"
+  ON business_settings FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Solo admin puede actualizar configuración"
+  ON business_settings FOR UPDATE
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Solo admin puede eliminar configuración"
+  ON business_settings FOR DELETE
+  USING (auth.role() = 'authenticated');
+
+-- Tabla de zonas de entrega
+CREATE TABLE delivery_zones (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  price INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Insertar zonas de entrega por defecto
+INSERT INTO delivery_zones (name, price) VALUES
+  ('La Habana Vieja', 1200),
+  ('Centro Habana', 1500),
+  ('Vedado', 2500),
+  ('Cerro', 2500),
+  ('Marianao', 3000),
+  ('La Lisa', 3500),
+  ('Santa Fe', 4000),
+  ('Casa Blanca', 1200),
+  ('Habana del Este', 1800),
+  ('Cojímar', 1800),
+  ('Bahía', 1000),
+  ('Alamar', 2500),
+  ('Guanabo', 4500),
+  ('Guanabacoa', 2000),
+  ('Compro Florido', 4500),
+  ('Cotorro', 3000),
+  ('San Miguel', 2000),
+  ('Diezmero', 2500),
+  ('Arroyo Naranjo', 2500),
+  ('Managua', 3500),
+  ('Boyeros', 4500),
+  ('Santiago de las Vegas', 5000),
+  ('Cujae', 2800),
+  ('10 de Octubre', 2000),
+  ('Luyano', 1500),
+  ('Virgen del Camino', 1200);
+
+ALTER TABLE delivery_zones ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Zonas visibles públicamente"
+  ON delivery_zones FOR SELECT
+  USING (true);
+
+CREATE POLICY "Solo admin puede insertar zonas"
+  ON delivery_zones FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Solo admin puede actualizar zonas"
+  ON delivery_zones FOR UPDATE
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Solo admin puede eliminar zonas"
+  ON delivery_zones FOR DELETE
+  USING (auth.role() = 'authenticated');
 ```
 
 ### 3. Crear bucket de Storage
