@@ -108,38 +108,14 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
         <div className="p-4">
           <span className="text-emerald-400 text-xs font-semibold uppercase tracking-wider">{product.team}</span>
-          <h3 className="text-white font-semibold text-sm mb-2 truncate">{product.name}</h3>
-          
-          {/* Mostrar jugadores y tallas disponibles */}
-          {variants.length > 0 && (
-            <div className="mb-3 space-y-2">
-              {variants.slice(0, 3).map((variant, idx) => (
-                <div key={idx} className="flex items-start gap-2">
-                  <span className="text-zinc-300 text-xs font-medium whitespace-nowrap min-w-[60px]">
-                    {variant.player_name}
-                  </span>
-                  <div className="flex flex-wrap gap-1">
-                    {variant.sizes.map((size, sizeIdx) => (
-                      <span
-                        key={sizeIdx}
-                        className="bg-zinc-800 text-zinc-400 text-[10px] px-1.5 py-0.5 rounded border border-zinc-700"
-                      >
-                        {size}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              {variants.length > 3 && (
-                <p className="text-zinc-500 text-[10px] italic">
-                  +{variants.length - 3} jugador{variants.length - 3 > 1 ? 'es' : ''} más
-                </p>
-              )}
-            </div>
-          )}
-          
+          <h3 className="text-white font-semibold text-sm mb-1 truncate">{product.name}</h3>
           <div className="flex items-center justify-between mb-3">
             <span className="text-white font-bold text-lg">${product.price} <span className="text-xs text-zinc-400">USD</span></span>
+            {variants.length > 0 && (
+              <span className="text-zinc-500 text-xs">
+                {variants.reduce((sum, v) => sum + v.sizes.length, 0)} opciones
+              </span>
+            )}
           </div>
           <button
             onClick={handleOpenModal}
@@ -187,55 +163,61 @@ export default function ProductCard({ product }: ProductCardProps) {
                 </button>
               </div>
 
-              {/* Selección de jugador y talla */}
+              {/* Selección de jugador */}
               <div className="mb-4">
                 <label className="text-zinc-400 text-xs font-medium mb-2 block">
-                  Elegí el jugador y la talla
+                  1. Elegí el jugador
                 </label>
-                <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
                   {variants.map(variant => (
-                    <div
+                    <button
                       key={variant.id}
-                      className={`p-3 rounded-lg border transition-all ${
+                      onClick={() => handleSelectVariant(variant)}
+                      className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
                         selectedVariant?.id === variant.id
-                          ? 'bg-emerald-500/20 border-emerald-500'
-                          : 'bg-zinc-800 border-zinc-700'
+                          ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                          : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600'
                       }`}
                     >
-                      <button
-                        onClick={() => handleSelectVariant(variant)}
-                        className="w-full text-left mb-2"
-                      >
-                        <span className={`text-sm font-semibold ${
-                          selectedVariant?.id === variant.id ? 'text-emerald-400' : 'text-white'
-                        }`}>
-                          {variant.player_name}
-                        </span>
-                      </button>
-                      <div className="flex flex-wrap gap-1.5">
+                      {variant.player_name}
+                      <div className="flex flex-wrap gap-1 mt-1.5">
                         {variant.sizes.map(size => (
-                          <button
+                          <span
                             key={size}
-                            onClick={() => {
-                              handleSelectVariant(variant);
-                              setSelectedSize(size);
-                            }}
-                            className={`px-3 py-1.5 rounded text-xs font-semibold transition-all ${
-                              selectedVariant?.id === variant.id && selectedSize === size
-                                ? 'bg-emerald-500 text-black'
-                                : selectedVariant?.id === variant.id
-                                ? 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
-                                : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600 hover:text-white'
-                            }`}
+                            className="bg-zinc-700 text-zinc-300 text-[10px] px-1.5 py-0.5 rounded"
                           >
                             {size}
-                          </button>
+                          </span>
                         ))}
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
+
+              {/* Selección de talla */}
+              {selectedVariant && (
+                <div className="mb-4">
+                  <label className="text-zinc-400 text-xs font-medium mb-2 block">
+                    2. Elegí la talla
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedVariant.sizes.map(size => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`px-4 py-2 rounded-lg border text-sm font-semibold transition-all ${
+                          selectedSize === size
+                            ? 'bg-emerald-500 border-emerald-500 text-black'
+                            : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Resumen y botón */}
               <div className="border-t border-zinc-800 pt-4 mt-4">
