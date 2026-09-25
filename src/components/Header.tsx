@@ -1,11 +1,20 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useBusiness } from '../context/BusinessContext';
 import CartDrawer from './CartDrawer';
 
 export default function Header() {
   const { itemCount } = useCart();
+  const { settings } = useBusiness();
   const [cartOpen, setCartOpen] = useState(false);
+
+  const initials = settings.business_name
+    .split(' ')
+    .map(w => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || 'J21';
 
   return (
     <>
@@ -13,9 +22,9 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-9 h-9 bg-emerald-500 rounded-lg flex items-center justify-center">
-              <span className="text-black font-extrabold text-sm">J21</span>
+              <span className="text-black font-extrabold text-sm">{initials}</span>
             </div>
-            <span className="text-white font-bold text-lg hidden sm:block">J21 Store</span>
+            <span className="text-white font-bold text-lg hidden sm:block">{settings.business_name}</span>
           </Link>
 
           <nav className="flex items-center gap-4">
