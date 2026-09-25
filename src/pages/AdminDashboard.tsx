@@ -15,6 +15,7 @@ export default function AdminDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
@@ -199,8 +200,60 @@ export default function AdminDashboard() {
       ) : (
         <>
           {/* Products section */}
+          {/* Search Bar */}
+          <div className="mb-4">
+            <div className="relative">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                placeholder="Buscar productos..."
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-500 focus:outline-none transition-colors"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className="flex justify-between items-center mb-4">
-            <p className="text-zinc-400 text-sm">{products.length} producto{products.length !== 1 ? 's' : ''}</p>
+            <p className="text-zinc-400 text-sm">
+              {products.filter(p => {
+                if (!searchTerm) return true;
+                const term = searchTerm.toLowerCase();
+                return p.name.toLowerCase().includes(term) || 
+                       p.team.toLowerCase().includes(term) ||
+                       p.size.toLowerCase().includes(term);
+              }).length} producto{products.filter(p => {
+                if (!searchTerm) return true;
+                const term = searchTerm.toLowerCase();
+                return p.name.toLowerCase().includes(term) || 
+                       p.team.toLowerCase().includes(term) ||
+                       p.size.toLowerCase().includes(term);
+              }).length !== 1 ? 's' : ''}
+              {searchTerm && ` (de ${products.length} total)`}
+            </p>
             <button
               onClick={() => { resetForm(); setShowForm(true); }}
               className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
@@ -356,7 +409,13 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map(product => (
+                    {products.filter(product => {
+                      if (!searchTerm) return true;
+                      const term = searchTerm.toLowerCase();
+                      return product.name.toLowerCase().includes(term) || 
+                             product.team.toLowerCase().includes(term) ||
+                             product.size.toLowerCase().includes(term);
+                    }).map(product => (
                       <tr key={product.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
                         <td className="px-4 py-3">
                           <JerseyImage
