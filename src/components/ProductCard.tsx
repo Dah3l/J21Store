@@ -75,7 +75,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <>
-      <div className="group bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 hover:border-emerald-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10">
+      <div className="group bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 hover:border-emerald-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 flex flex-col h-full">
         <div 
           className="aspect-square overflow-hidden bg-zinc-800 relative cursor-pointer"
           onClick={() => setShowLightbox(true)}
@@ -123,7 +123,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
         </div>
-        <div className="p-4">
+        <div className="p-4 flex-1 flex flex-col">
           <span className="text-emerald-400 text-xs font-semibold uppercase tracking-wider">{product.team}</span>
           <h3 className="text-white font-semibold text-sm mb-1 truncate">{product.name}</h3>
           {isPreorder && (
@@ -142,7 +142,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={handleOpenModal}
             disabled={isOutOfStock || (!isPreorder && variants.length === 0)}
-            className={`w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ${
+            className={`w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 mt-auto ${
               feedback === 'added'
                 ? 'bg-emerald-500 text-black'
                 : isOutOfStock || (!isPreorder && variants.length === 0)
