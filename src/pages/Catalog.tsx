@@ -12,7 +12,6 @@ export default function Catalog() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTeam, setFilterTeam] = useState('');
   const [filterSize, setFilterSize] = useState('');
-  const [filterMaxPrice, setFilterMaxPrice] = useState<number>(0);
   const [teams, setTeams] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 12; // 3 filas × 4 columnas
@@ -24,7 +23,7 @@ export default function Catalog() {
   // Resetear página cuando cambian filtros o búsqueda
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterTeam, filterSize, filterMaxPrice]);
+  }, [searchTerm, filterTeam, filterSize]);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -57,7 +56,6 @@ export default function Catalog() {
     }
     if (filterTeam && p.team !== filterTeam) return false;
     if (filterSize && (!p.variants || !p.variants.some(v => v.sizes.includes(filterSize)))) return false;
-    if (filterMaxPrice > 0 && p.price > filterMaxPrice) return false;
     return true;
   });
 
@@ -65,10 +63,9 @@ export default function Catalog() {
     setSearchTerm('');
     setFilterTeam('');
     setFilterSize('');
-    setFilterMaxPrice(0);
   };
 
-  const hasActiveFilters = searchTerm || filterTeam || filterSize || filterMaxPrice > 0;
+  const hasActiveFilters = searchTerm || filterTeam || filterSize;
 
   // Paginación
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -153,16 +150,6 @@ export default function Catalog() {
                 <option key={size} value={size}>{size}</option>
               ))}
             </select>
-          </div>
-          <div className="flex-1 min-w-[120px]">
-            <label className="text-zinc-400 text-xs font-medium mb-1 block">Precio máx.</label>
-            <input
-              type="number"
-              value={filterMaxPrice || ''}
-              onChange={e => setFilterMaxPrice(Number(e.target.value))}
-              placeholder="Sin límite"
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none"
-            />
           </div>
           {hasActiveFilters && (
             <button
