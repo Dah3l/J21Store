@@ -12,6 +12,7 @@ interface VariantForm {
   id?: string;
   player_name: string;
   sizes: string[];
+  stock: number;
 }
 
 export default function AdminDashboard() {
@@ -70,14 +71,14 @@ export default function AdminDashboard() {
   };
 
   const addVariant = () => {
-    setVariants([...variants, { player_name: '', sizes: [] }]);
+    setVariants([...variants, { player_name: '', sizes: [], stock: 0 }]);
   };
 
   const removeVariant = (index: number) => {
     setVariants(variants.filter((_, i) => i !== index));
   };
 
-  const updateVariant = (index: number, field: keyof VariantForm, value: string | string[]) => {
+  const updateVariant = (index: number, field: keyof VariantForm, value: string | string[] | number) => {
     const updated = [...variants];
     updated[index] = { ...updated[index], [field]: value };
     setVariants(updated);
@@ -139,6 +140,7 @@ export default function AdminDashboard() {
         product_id: productId,
         player_name: v.player_name.trim(),
         sizes: v.sizes,
+        stock: v.stock || 0,
       }));
 
     if (variantsToInsert.length > 0) {
@@ -171,6 +173,7 @@ export default function AdminDashboard() {
         id: v.id,
         player_name: v.player_name,
         sizes: v.sizes,
+        stock: v.stock || 0,
       }))
     );
     setShowForm(true);
@@ -446,7 +449,7 @@ export default function AdminDashboard() {
                             className="w-full bg-zinc-700 border border-zinc-600 rounded px-3 py-2 text-white text-sm mb-2 focus:border-emerald-500 focus:outline-none"
                           />
                           <p className="text-zinc-400 text-xs mb-1">Tallas disponibles:</p>
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-1 mb-3">
                             {SIZES.map(size => (
                               <button
                                 key={size}
@@ -461,6 +464,20 @@ export default function AdminDashboard() {
                                 {size}
                               </button>
                             ))}
+                          </div>
+                          <div>
+                            <label className="text-zinc-400 text-xs mb-1 block">Stock para este jugador:</label>
+                            <input
+                              type="number"
+                              value={variant.stock}
+                              onChange={e => updateVariant(index, 'stock', parseInt(e.target.value) || 0)}
+                              min="0"
+                              placeholder="0"
+                              className="w-full bg-zinc-700 border border-zinc-600 rounded px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none"
+                            />
+                            <p className="text-zinc-500 text-xs mt-1">
+                              Stock total disponible para todas las tallas de este jugador
+                            </p>
                           </div>
                         </div>
                       ))}

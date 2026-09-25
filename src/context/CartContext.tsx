@@ -42,6 +42,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const getRemainingStock = (product: Product, player?: string, size?: string): number => {
     const inCart = getQuantityInCart(product.id, player, size);
+    
+    // Si hay jugador seleccionado, usar el stock de la variante
+    if (player && product.variants) {
+      const variant = product.variants.find(v => v.player_name === player);
+      if (variant) {
+        return Math.max(0, (variant.stock || 0) - inCart);
+      }
+    }
+    
+    // Fallback al stock global del producto
     return Math.max(0, product.stock - inCart);
   };
 
@@ -85,8 +95,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const item = items.find(i => getItemKey(i.product.id, i.selectedPlayer, i.selectedSize) === key);
     if (!item) return;
 
+    // Determinar el stock máximo basado en la variante
+    let maxQuantity = item.product.stock;
+    if (player && item.product.variants) {
+      const variant = item.product.variants.find(v => v.player_name === player);
+      if (variant) {
+        maxQuantity = variant.stock || 0;
+      }
+    }
+
     // Limitar al stock disponible
-    const maxQuantity = item.product.stock;
     const clampedQuantity = Math.min(quantity, maxQuantity);
 
     setItems(prev =>

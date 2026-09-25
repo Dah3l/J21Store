@@ -3,6 +3,7 @@ export interface ProductVariant {
   product_id: string;
   player_name: string;
   sizes: string[];
+  stock: number;
   created_at: string;
 }
 
@@ -12,7 +13,7 @@ export interface Product {
   team: string;
   price: number;
   image_url: string;
-  stock: number;
+  stock: number; // Stock global (opcional, para compatibilidad)
   created_at: string;
   variants?: ProductVariant[];
 }

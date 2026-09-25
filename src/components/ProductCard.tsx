@@ -18,7 +18,9 @@ export default function ProductCard({ product }: ProductCardProps) {
   const totalInCart = variants.reduce((sum, v) => 
     sum + v.sizes.reduce((sizeSum, size) => sizeSum + getQuantityInCart(product.id, v.player_name, size), 0), 0
   );
-  const isOutOfStock = product.stock <= 0;
+  // Calcular stock total de todas las variantes
+  const totalStock = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
+  const isOutOfStock = totalStock <= 0;
 
   const handleOpenModal = () => {
     if (isOutOfStock || variants.length === 0) return;
@@ -35,7 +37,9 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = () => {
     if (!selectedVariant || !selectedSize) return;
 
-    const remaining = product.stock - getQuantityInCart(product.id, selectedVariant.player_name, selectedSize);
+    // Usar el stock de la variante seleccionada
+    const variantStock = selectedVariant.stock || 0;
+    const remaining = variantStock - getQuantityInCart(product.id, selectedVariant.player_name, selectedSize);
     if (remaining <= 0) {
       setFeedback('limit');
       setTimeout(() => setFeedback(null), 2500);
