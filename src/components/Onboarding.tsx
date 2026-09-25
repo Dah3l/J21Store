@@ -14,8 +14,13 @@ const steps: OnboardingStep[] = [
   },
   {
     title: 'Busca y filtra',
-    description: 'Usa la barra de búsqueda para encontrar por nombre, equipo o jugador. También puedes filtrar por equipo o talla específica para encontrar justo lo que necesitas.',
+    description: 'Usa la barra de búsqueda para encontrar por nombre, equipo o jugador. Filtra por equipo, talla o disponibilidad: productos en stock o por encargo.',
     emoji: '🔍',
+  },
+  {
+    title: 'Dos tipos de productos',
+    description: '📦 En stock: disponibles para entrega inmediata. 🕐 Por encargo: se fabrican especialmente para ti con tiempo de entrega estimado. ¡Elige según tu necesidad!',
+    emoji: '📋',
   },
   {
     title: 'Ve las fotos en grande',
@@ -24,12 +29,12 @@ const steps: OnboardingStep[] = [
   },
   {
     title: 'Elige tu camiseta',
-    description: 'Haz clic en "Elegir jugador y talla", selecciona el jugador que quieras y la talla disponible. Cada jugador muestra sus tallas disponibles para que elijas rápido.',
+    description: 'En productos en stock: haz clic en "Elegir", selecciona jugador y talla. En productos por encargo: haz clic en "🕐 Encargo" y se agrega directo al carrito.',
     emoji: '👕',
   },
   {
     title: 'Haz tu pedido',
-    description: 'Agrega al carrito, revisa tu selección y haz clic en "Pedir por WhatsApp". Completa tus datos, zona de entrega y el pedido se envía automáticamente.',
+    description: 'Revisa tu carrito, haz clic en "Pedir por WhatsApp". Completa tus datos, zona de entrega y el pedido se envía automáticamente con todos los detalles.',
     emoji: '📱',
   },
 ];
@@ -39,8 +44,10 @@ export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
+    const onboardingVersion = 'v2'; // Actualizar versión para mostrar tutorial actualizado
     const hasSeenOnboarding = localStorage.getItem('j21-onboarding-seen');
-    if (!hasSeenOnboarding) {
+    
+    if (hasSeenOnboarding !== onboardingVersion) {
       // Mostrar el onboarding después de 1 segundo
       const timer = setTimeout(() => {
         setIsOpen(true);
@@ -62,7 +69,7 @@ export default function Onboarding() {
   };
 
   const handleClose = () => {
-    localStorage.setItem('j21-onboarding-seen', 'true');
+    localStorage.setItem('j21-onboarding-seen', 'v2');
     setIsOpen(false);
   };
 
