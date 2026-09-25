@@ -180,9 +180,16 @@ export default function ProductCard({ product }: ProductCardProps) {
                       }`}
                     >
                       {variant.player_name}
-                      <span className="block text-xs text-zinc-500 mt-0.5">
-                        {variant.sizes.length} talla{variant.sizes.length > 1 ? 's' : ''}
-                      </span>
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {variant.sizes.map(size => (
+                          <span
+                            key={size}
+                            className="bg-zinc-700 text-zinc-300 text-[10px] px-1.5 py-0.5 rounded"
+                          >
+                            {size}
+                          </span>
+                        ))}
+                      </div>
                     </button>
                   ))}
                 </div>
