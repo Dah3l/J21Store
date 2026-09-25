@@ -36,6 +36,16 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
             ) : (
               items.map((item, index) => {
                 const itemKey = `${item.product.id}-${item.selectedPlayer || ''}-${item.selectedSize || ''}`;
+                
+                // Calcular stock máximo para esta variante específica
+                let maxStock = item.product.stock;
+                if (item.selectedPlayer && item.product.variants) {
+                  const variant = item.product.variants.find(v => v.player_name === item.selectedPlayer);
+                  if (variant) {
+                    maxStock = variant.stock || 0;
+                  }
+                }
+                
                 return (
                 <div key={itemKey} className="flex gap-3 bg-zinc-800 rounded-lg p-3">
                   <JerseyImage
@@ -61,10 +71,10 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                         <span className="text-white text-sm w-5 text-center">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedPlayer, item.selectedSize)}
-                          disabled={item.quantity >= item.product.stock}
-                          title={item.quantity >= item.product.stock ? 'Stock máximo alcanzado' : ''}
+                          disabled={item.quantity >= maxStock}
+                          title={item.quantity >= maxStock ? 'Stock máximo alcanzado' : ''}
                           className={`w-6 h-6 rounded text-sm flex items-center justify-center ${
-                            item.quantity >= item.product.stock
+                            item.quantity >= maxStock
                               ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
                               : 'bg-zinc-700 text-white hover:bg-zinc-600'
                           }`}
@@ -72,7 +82,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                       </div>
                       <span className="text-emerald-400 font-bold text-sm">${(item.product.price * item.quantity).toLocaleString()}</span>
                     </div>
-                    {item.quantity >= item.product.stock && (
+                    {item.quantity >= maxStock && (
                       <p className="text-amber-400 text-xs mt-1">⚠ Stock máximo</p>
                     )}
                   </div>
