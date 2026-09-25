@@ -43,7 +43,11 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                 
                 // Calcular stock máximo para esta variante específica
                 let maxStock = 0;
-                if (item.selectedPlayer && item.product.variants) {
+                
+                // Si es producto por encargo, stock ilimitado
+                if (item.product.is_preorder) {
+                  maxStock = 999;
+                } else if (item.selectedPlayer && item.product.variants) {
                   const variant = item.product.variants.find(v => v.player_name === item.selectedPlayer);
                   if (variant) {
                     maxStock = variant.stock || 0;
