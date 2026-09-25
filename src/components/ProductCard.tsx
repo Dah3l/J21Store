@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { Product, ProductVariant, SIZES } from '../types';
 import JerseyImage from './JerseyImage';
+import ImageLightbox from './ImageLightbox';
 import { useModalScrollLock } from '../hooks/useModalScrollLock';
 
 interface ProductCardProps {
@@ -11,12 +12,13 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem, getQuantityInCart } = useCart();
   const [showModal, setShowModal] = useState(false);
+  const [showLightbox, setShowLightbox] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [feedback, setFeedback] = useState<'added' | 'limit' | null>(null);
 
   // Bloquear scroll cuando el modal está abierto
-  useModalScrollLock(showModal);
+  useModalScrollLock(showModal || showLightbox);
 
   const variants = product.variants || [];
   const totalInCart = variants.reduce((sum, v) => 
@@ -63,24 +65,35 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <>
       <div className="group bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 hover:border-emerald-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10">
-        <div className="aspect-square overflow-hidden bg-zinc-800 relative">
+        <div 
+          className="aspect-square overflow-hidden bg-zinc-800 relative cursor-pointer"
+          onClick={() => setShowLightbox(true)}
+        >
           <JerseyImage
             src={product.image_url}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
+          {/* Overlay con icono de lupa al hacer hover */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-3 shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-zinc-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+              </svg>
+            </div>
+          </div>
           {isOutOfStock && (
-            <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/70 flex items-center justify-center pointer-events-none">
               <span className="text-red-400 font-bold text-lg">Sin stock</span>
             </div>
           )}
           {!isOutOfStock && totalStock <= 3 && totalInCart === 0 && (
-            <div className="absolute top-2 right-2 bg-amber-500 text-black text-xs font-bold px-2 py-1 rounded-full">
+            <div className="absolute top-2 right-2 bg-amber-500 text-black text-xs font-bold px-2 py-1 rounded-full pointer-events-none">
               ¡Últimas {totalStock}!
             </div>
           )}
           {totalInCart > 0 && (
-            <div className="absolute top-2 left-2 bg-emerald-500 text-black text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+            <div className="absolute top-2 left-2 bg-emerald-500 text-black text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 pointer-events-none">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
@@ -88,7 +101,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
           {variants.length > 1 && !isOutOfStock && (
-            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
+            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full pointer-events-none">
               {variants.length} jugador{variants.length > 1 ? 'es' : ''}
             </div>
           )}
@@ -236,6 +249,14 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         </div>
       )}
+
+      {/* Lightbox para ver imagen ampliada */}
+      <ImageLightbox
+        isOpen={showLightbox}
+        onClose={() => setShowLightbox(false)}
+        src={product.image_url}
+        alt={product.name}
+      />
     </>
   );
 }
