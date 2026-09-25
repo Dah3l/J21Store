@@ -9,21 +9,18 @@ export default function Header() {
   const { settings } = useBusiness();
   const [cartOpen, setCartOpen] = useState(false);
 
-  const initials = settings.business_name
-    .split(' ')
-    .map(w => w[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase() || 'J21';
+  const LOGO_URL = 'https://fwempizdkfvorzfzjgtg.supabase.co/storage/v1/object/public/jerseys/products/1790305089491-hn6warfj9cb.jpg';
 
   return (
     <>
       <header className="sticky top-0 z-30 bg-black/90 backdrop-blur-md border-b border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-emerald-500 rounded-lg flex items-center justify-center">
-              <span className="text-black font-extrabold text-sm">{initials}</span>
-            </div>
+            <img 
+              src={LOGO_URL} 
+              alt={`${settings.business_name} logo`}
+              className="w-10 h-10 object-contain rounded-lg"
+            />
             <span className="text-white font-bold text-lg hidden sm:block">{settings.business_name}</span>
           </Link>
 
