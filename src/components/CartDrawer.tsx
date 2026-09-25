@@ -2,10 +2,14 @@ import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import JerseyImage from './JerseyImage';
 import OrderForm from './OrderForm';
+import { useModalScrollLock } from '../hooks/useModalScrollLock';
 
 export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { items, removeItem, updateQuantity, total, clearCart } = useCart();
   const [showOrderForm, setShowOrderForm] = useState(false);
+
+  // Bloquear scroll cuando el drawer está abierto
+  useModalScrollLock(isOpen);
 
   return (
     <>

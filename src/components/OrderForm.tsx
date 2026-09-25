@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { CartItem, DEFAULT_WHATSAPP_NUMBER } from '../types';
 import { useBusiness } from '../context/BusinessContext';
 import { useDelivery } from '../context/DeliveryContext';
+import { useModalScrollLock } from '../hooks/useModalScrollLock';
 
 interface OrderFormProps {
   isOpen: boolean;
@@ -20,6 +21,9 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
   const [pickupTime, setPickupTime] = useState('');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Bloquear scroll cuando el modal está abierto
+  useModalScrollLock(isOpen);
 
   // Calcular precio de envío
   const getDeliveryPrice = () => {
