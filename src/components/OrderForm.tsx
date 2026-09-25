@@ -29,7 +29,6 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
   };
 
   const deliveryPrice = getDeliveryPrice();
-  const finalTotal = total + deliveryPrice;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,34 +45,42 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
     message += `👤 *Cliente:* ${name}\n`;
     message += `📍 *Dirección:* ${finalAddress}\n`;
     message += `🕐 *Hora de retiro:* ${pickupTime}\n\n`;
-    message += `📦 *Productos:*\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `📦 *PRODUCTOS:*\n\n`;
     
     items.forEach(item => {
       message += `• ${item.product.name} (${item.product.team})\n`;
       if (item.selectedPlayer) {
-        message += `  Jugador: ${item.selectedPlayer}\n`;
+        message += `  👤 Jugador: ${item.selectedPlayer}\n`;
       }
       if (item.selectedSize) {
-        message += `  Talla: ${item.selectedSize}`;
+        message += `  📏 Talla: ${item.selectedSize}\n`;
       }
-      message += ` | Cant: ${item.quantity} | $${(item.product.price * item.quantity).toLocaleString()}\n\n`;
+      message += `  📊 Cantidad: ${item.quantity}\n`;
+      message += `  💵 Precio: $${item.product.price} USD c/u\n`;
+      message += `  💰 Subtotal: $${item.product.price * item.quantity} USD\n\n`;
     });
     
-    message += `💰 *Subtotal: $${total.toLocaleString()}*\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `💵 *Total Productos: $${total} USD*\n\n`;
     
     if (deliveryPrice > 0) {
-      message += `🚚 *Envío (${zone?.name}): $${deliveryPrice.toLocaleString()}*\n`;
+      message += `🚚 *Envío (${zone?.name}): $${deliveryPrice} CUP*\n\n`;
     } else if (selectedZone === 'other') {
-      message += `🚚 *Envío: A coordinar*\n`;
+      message += `🚚 *Envío: A coordinar*\n\n`;
     }
     
-    message += `\n💵 *Total: $${finalTotal.toLocaleString()}*\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `💰 *RESUMEN:*\n`;
+    message += `• Productos: $${total} USD\n`;
+    if (deliveryPrice > 0) {
+      message += `• Envío: $${deliveryPrice} CUP\n`;
+    }
+    message += `\n¡Hola! Me gustaría hacer este pedido.`;
     
     if (notes.trim()) {
-      message += `\n📝 *Notas:* ${notes}\n`;
+      message += `\n\n📝 *Notas:* ${notes}`;
     }
-    
-    message += `\n¡Hola! Me gustaría hacer este pedido.`;
 
     const encodedMessage = encodeURIComponent(message);
     const phone = settings.whatsapp_number || DEFAULT_WHATSAPP_NUMBER;
@@ -138,19 +145,25 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
               </div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-zinc-400 text-sm">Subtotal:</span>
-                <span className="text-white text-sm font-semibold">${total.toLocaleString()}</span>
+                <span className="text-emerald-400 text-sm font-semibold">${total} USD</span>
               </div>
               {deliveryPrice > 0 && (
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-zinc-400 text-sm">Envío:</span>
-                  <span className="text-emerald-400 text-sm font-semibold">${deliveryPrice.toLocaleString()}</span>
+                  <span className="text-amber-400 text-sm font-semibold">${deliveryPrice} CUP</span>
                 </div>
               )}
-              <div className="border-t border-zinc-700 pt-2 mt-2">
+              <div className="border-t border-zinc-700 pt-2 mt-2 space-y-1">
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-300 font-semibold">Total:</span>
-                  <span className="text-emerald-400 text-lg font-bold">${finalTotal.toLocaleString()}</span>
+                  <span className="text-zinc-300 text-sm">Total Productos:</span>
+                  <span className="text-emerald-400 font-bold">${total} USD</span>
                 </div>
+                {deliveryPrice > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-zinc-300 text-sm">Total Envío:</span>
+                    <span className="text-amber-400 font-bold">${deliveryPrice} CUP</span>
+                  </div>
+                )}
               </div>
             </div>
 

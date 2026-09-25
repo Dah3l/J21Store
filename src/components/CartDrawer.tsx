@@ -80,7 +80,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                           }`}
                         >+</button>
                       </div>
-                      <span className="text-emerald-400 font-bold text-sm">${(item.product.price * item.quantity).toLocaleString()}</span>
+                      <span className="text-emerald-400 font-bold text-sm">${item.product.price * item.quantity} USD</span>
                     </div>
                     {item.quantity >= maxStock && (
                       <p className="text-amber-400 text-xs mt-1">⚠ Stock máximo</p>
@@ -104,9 +104,10 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
           {items.length > 0 && (
             <div className="p-4 border-t border-zinc-800 space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-zinc-400">Total</span>
-                <span className="text-white text-2xl font-bold">${total.toLocaleString()}</span>
+                <span className="text-zinc-400">Total Productos</span>
+                <span className="text-emerald-400 text-2xl font-bold">${total} USD</span>
               </div>
+              <p className="text-zinc-500 text-xs text-center">* Envío se calcula al finalizar el pedido</p>
               <button
                 onClick={() => setShowOrderForm(true)}
                 className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
