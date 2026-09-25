@@ -5,6 +5,7 @@ import { Product, ProductVariant, SIZES } from '../types';
 import JerseyImage from '../components/JerseyImage';
 import AdminSettings from './AdminSettings';
 import AdminDeliveryZones from './AdminDeliveryZones';
+import { useModalScrollLock } from '../hooks/useModalScrollLock';
 
 type AdminTab = 'products' | 'settings' | 'delivery';
 
@@ -33,6 +34,9 @@ export default function AdminDashboard() {
   const [imageUrl, setImageUrl] = useState('');
   const [originalImageUrl, setOriginalImageUrl] = useState(''); // Para trackear cambios de imagen
   const [variants, setVariants] = useState<VariantForm[]>([]);
+
+  // Bloquear scroll cuando el modal está abierto
+  useModalScrollLock(showForm);
 
   useEffect(() => {
     checkAuth();
@@ -461,18 +465,9 @@ export default function AdminDashboard() {
 
                     {/* Variantes */}
                     <div className="border-t border-zinc-800 pt-4">
-                      <div className="flex justify-between items-center mb-3">
-                        <label className="text-zinc-400 text-xs font-medium">
-                          Jugadores y tallas
-                        </label>
-                        <button
-                          type="button"
-                          onClick={addVariant}
-                          className="text-emerald-400 hover:text-emerald-300 text-xs font-medium"
-                        >
-                          + Agregar jugador
-                        </button>
-                      </div>
+                      <label className="text-zinc-400 text-xs font-medium mb-3 block">
+                        Jugadores y tallas
+                      </label>
 
                       {variants.length === 0 && (
                         <p className="text-zinc-500 text-xs text-center py-3">
@@ -532,6 +527,14 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                       ))}
+
+                      <button
+                        type="button"
+                        onClick={addVariant}
+                        className="w-full mt-3 py-2.5 border-2 border-dashed border-emerald-500/30 hover:border-emerald-500 text-emerald-400 hover:text-emerald-300 rounded-lg text-sm font-medium transition-all hover:bg-emerald-500/5"
+                      >
+                        + Agregar jugador
+                      </button>
                     </div>
 
                     <div className="flex gap-3 pt-2">

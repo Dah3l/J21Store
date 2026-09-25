@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { Product, ProductVariant, SIZES } from '../types';
 import JerseyImage from './JerseyImage';
+import { useModalScrollLock } from '../hooks/useModalScrollLock';
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +14,9 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [feedback, setFeedback] = useState<'added' | 'limit' | null>(null);
+
+  // Bloquear scroll cuando el modal está abierto
+  useModalScrollLock(showModal);
 
   const variants = product.variants || [];
   const totalInCart = variants.reduce((sum, v) => 
