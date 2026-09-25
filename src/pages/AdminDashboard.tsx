@@ -62,7 +62,7 @@ export default function AdminDashboard() {
   const resetForm = () => {
     setName('');
     setTeam('');
-    setPrice('');
+    setPrice('20'); // Precio por defecto en USD
     setImageUrl('');
     setOriginalImageUrl('');
     setVariants([]);
@@ -417,7 +417,7 @@ export default function AdminDashboard() {
                       />
                     </div>
                     <div>
-                      <label className="text-zinc-400 text-xs font-medium mb-1 block">Precio ($)</label>
+                      <label className="text-zinc-400 text-xs font-medium mb-1 block">Precio (USD)</label>
                       <input
                         type="number"
                         value={price}
@@ -601,7 +601,7 @@ export default function AdminDashboard() {
                           </p>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-white text-sm font-semibold">${product.price.toLocaleString()}</span>
+                          <span className="text-white text-sm font-semibold">${product.price} USD</span>
                         </td>
                         <td className="px-4 py-3">
                           {(() => {

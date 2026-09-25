@@ -121,17 +121,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const generateWhatsAppMessage = () => {
     let message = `🛒 *Nuevo Pedido - ${settings.business_name}*\n\n`;
+    message += `📦 *Productos:*\n`;
     items.forEach(item => {
       message += `• ${item.product.name} (${item.product.team})\n`;
       if (item.selectedPlayer) {
-        message += `  Jugador: ${item.selectedPlayer}\n`;
+        message += `  👤 Jugador: ${item.selectedPlayer}\n`;
       }
       if (item.selectedSize) {
-        message += `  Talla: ${item.selectedSize}`;
+        message += `  📏 Talla: ${item.selectedSize}\n`;
       }
-      message += ` | Cant: ${item.quantity} | $${item.product.price * item.quantity}\n\n`;
+      message += `  📊 Cantidad: ${item.quantity}\n`;
+      message += `  💵 Precio: $${item.product.price} USD c/u\n`;
+      message += `  💰 Subtotal: $${item.product.price * item.quantity} USD\n\n`;
     });
-    message += `💰 *Total: $${total}*\n\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `💵 *Total Productos: $${total} USD*\n\n`;
     message += '¡Hola! Me gustaría hacer este pedido.';
     return encodeURIComponent(message);
   };

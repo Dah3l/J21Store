@@ -93,7 +93,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <span className="text-emerald-400 text-xs font-semibold uppercase tracking-wider">{product.team}</span>
           <h3 className="text-white font-semibold text-sm mb-1 truncate">{product.name}</h3>
           <div className="flex items-center justify-between mb-3">
-            <span className="text-white font-bold text-lg">${product.price.toLocaleString()}</span>
+            <span className="text-white font-bold text-lg">${product.price} <span className="text-xs text-zinc-400">USD</span></span>
             {variants.length > 0 && (
               <span className="text-zinc-500 text-xs">
                 {variants.reduce((sum, v) => sum + v.sizes.length, 0)} opciones
@@ -199,7 +199,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               <div className="border-t border-zinc-800 pt-4 mt-4">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-zinc-400 text-sm">Precio:</span>
-                  <span className="text-white font-bold text-lg">${product.price.toLocaleString()}</span>
+                  <span className="text-emerald-400 font-bold text-lg">${product.price} USD</span>
                 </div>
                 {selectedVariant && selectedSize && (
                   <p className="text-zinc-500 text-xs mb-3">
