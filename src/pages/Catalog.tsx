@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { Product, SIZES } from '../types';
 import ProductCard from '../components/ProductCard';
 import { useBusiness } from '../context/BusinessContext';
+import FAQ from '../components/FAQ';
 
 export default function Catalog() {
   const { settings } = useBusiness();
@@ -151,6 +152,9 @@ export default function Catalog() {
           {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
         </p>
       )}
+
+      {/* FAQ Section */}
+      <FAQ />
     </div>
   );
 }
