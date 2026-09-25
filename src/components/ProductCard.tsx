@@ -128,17 +128,17 @@ export default function ProductCard({ product }: ProductCardProps) {
           <h3 className="text-white font-semibold text-sm mb-1 truncate">{product.name}</h3>
           <div className="flex items-center justify-between mb-3">
             <span className="text-white font-bold text-lg">${product.price} <span className="text-xs text-zinc-400">USD</span></span>
-            {variants.length > 0 && !isPreorder && (
+            {!isPreorder && variants.length > 0 && (
               <span className="text-zinc-500 text-xs">
                 {variants.length} jugador{variants.length > 1 ? 'es' : ''}
               </span>
             )}
+            {isPreorder && (
+              <span className="text-amber-400 text-xs">
+                🚚 {deliveryDays} días
+              </span>
+            )}
           </div>
-          {isPreorder && (
-            <p className="text-amber-400 text-xs mb-3">
-              🚚 {deliveryDays} días
-            </p>
-          )}
           <button
             onClick={handleOpenModal}
             disabled={isOutOfStock || (!isPreorder && variants.length === 0)}
