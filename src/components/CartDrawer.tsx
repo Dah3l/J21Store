@@ -51,11 +51,20 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                         <span className="text-white text-sm w-5 text-center">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                          className="w-6 h-6 rounded bg-zinc-700 text-white text-sm flex items-center justify-center hover:bg-zinc-600"
+                          disabled={item.quantity >= item.product.stock}
+                          title={item.quantity >= item.product.stock ? 'Stock máximo alcanzado' : ''}
+                          className={`w-6 h-6 rounded text-sm flex items-center justify-center ${
+                            item.quantity >= item.product.stock
+                              ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+                              : 'bg-zinc-700 text-white hover:bg-zinc-600'
+                          }`}
                         >+</button>
                       </div>
                       <span className="text-emerald-400 font-bold text-sm">${(item.product.price * item.quantity).toLocaleString()}</span>
                     </div>
+                    {item.quantity >= item.product.stock && (
+                      <p className="text-amber-400 text-xs mt-1">⚠ Stock máximo</p>
+                    )}
                   </div>
                   <button
                     onClick={() => removeItem(item.product.id)}
