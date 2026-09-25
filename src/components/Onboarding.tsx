@@ -9,22 +9,27 @@ interface OnboardingStep {
 const steps: OnboardingStep[] = [
   {
     title: '¡Bienvenido a J21 Store!',
-    description: 'Tu tienda de camisetas de fútbol. Te mostramos cómo funciona en 4 pasos rápidos.',
+    description: 'Tu tienda de camisetas de fútbol. Te mostramos cómo funciona en unos pasos rápidos.',
     emoji: '⚽',
   },
   {
-    title: 'Explora el catálogo',
-    description: 'Navega por las camisetas, usa la barra de búsqueda y los filtros por equipo o talla para encontrar lo que buscas.',
+    title: 'Busca y filtra',
+    description: 'Usa la barra de búsqueda para encontrar por nombre, equipo o jugador. También puedes filtrar por equipo o talla específica para encontrar justo lo que necesitas.',
     emoji: '🔍',
   },
   {
+    title: 'Ve las fotos en grande',
+    description: '¿Quieres ver los detalles de una camiseta? ¡Haz clic en la imagen! Se abrirá en pantalla completa para que aprecies cada detalle. Haz clic fuera o en la X para cerrar.',
+    emoji: '🖼️',
+  },
+  {
     title: 'Elige tu camiseta',
-    description: 'Haz clic en "Elegir jugador y talla", selecciona el jugador que quieras y la talla disponible. ¡Así de fácil!',
+    description: 'Haz clic en "Elegir jugador y talla", selecciona el jugador que quieras y la talla disponible. Cada jugador muestra sus tallas disponibles para que elijas rápido.',
     emoji: '👕',
   },
   {
     title: 'Haz tu pedido',
-    description: 'Agrega al carrito, revisa tu selección y haz clic en "Pedir por WhatsApp". Completa tus datos y el pedido se envía automáticamente.',
+    description: 'Agrega al carrito, revisa tu selección y haz clic en "Pedir por WhatsApp". Completa tus datos, zona de entrega y el pedido se envía automáticamente.',
     emoji: '📱',
   },
 ];
