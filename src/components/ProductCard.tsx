@@ -187,54 +187,55 @@ export default function ProductCard({ product }: ProductCardProps) {
                 </button>
               </div>
 
-              {/* Selección de jugador */}
+              {/* Selección de jugador y talla */}
               <div className="mb-4">
                 <label className="text-zinc-400 text-xs font-medium mb-2 block">
-                  1. Elegí el jugador
+                  Elegí el jugador y la talla
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-3">
                   {variants.map(variant => (
-                    <button
+                    <div
                       key={variant.id}
-                      onClick={() => handleSelectVariant(variant)}
-                      className={`p-3 rounded-lg border text-sm font-medium transition-all text-left ${
+                      className={`p-3 rounded-lg border transition-all ${
                         selectedVariant?.id === variant.id
-                          ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
-                          : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600'
+                          ? 'bg-emerald-500/20 border-emerald-500'
+                          : 'bg-zinc-800 border-zinc-700'
                       }`}
                     >
-                      {variant.player_name}
-                      <span className="block text-xs text-zinc-500 mt-0.5">
-                        {variant.sizes.length} talla{variant.sizes.length > 1 ? 's' : ''}
-                      </span>
-                    </button>
+                      <button
+                        onClick={() => handleSelectVariant(variant)}
+                        className="w-full text-left mb-2"
+                      >
+                        <span className={`text-sm font-semibold ${
+                          selectedVariant?.id === variant.id ? 'text-emerald-400' : 'text-white'
+                        }`}>
+                          {variant.player_name}
+                        </span>
+                      </button>
+                      <div className="flex flex-wrap gap-1.5">
+                        {variant.sizes.map(size => (
+                          <button
+                            key={size}
+                            onClick={() => {
+                              handleSelectVariant(variant);
+                              setSelectedSize(size);
+                            }}
+                            className={`px-3 py-1.5 rounded text-xs font-semibold transition-all ${
+                              selectedVariant?.id === variant.id && selectedSize === size
+                                ? 'bg-emerald-500 text-black'
+                                : selectedVariant?.id === variant.id
+                                ? 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                                : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600 hover:text-white'
+                            }`}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
-
-              {/* Selección de talla */}
-              {selectedVariant && (
-                <div className="mb-4">
-                  <label className="text-zinc-400 text-xs font-medium mb-2 block">
-                    2. Elegí la talla
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedVariant.sizes.map(size => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`px-4 py-2 rounded-lg border text-sm font-semibold transition-all ${
-                          selectedSize === size
-                            ? 'bg-emerald-500 border-emerald-500 text-black'
-                            : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:border-zinc-600'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Resumen y botón */}
               <div className="border-t border-zinc-800 pt-4 mt-4">
