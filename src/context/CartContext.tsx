@@ -43,6 +43,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const getRemainingStock = (product: Product, player?: string, size?: string): number => {
     const inCart = getQuantityInCart(product.id, player, size);
     
+    // Si es producto por encargo, stock ilimitado
+    if (product.is_preorder) {
+      return 999; // Stock "infinito" para productos por encargo
+    }
+    
     // Usar el stock de la variante
     if (player && product.variants) {
       const variant = product.variants.find(v => v.player_name === player);
@@ -97,7 +102,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     // Determinar el stock máximo basado en la variante
     let maxQuantity = 0;
-    if (player && item.product.variants) {
+    
+    // Si es producto por encargo, stock ilimitado
+    if (item.product.is_preorder) {
+      maxQuantity = 999;
+    } else if (player && item.product.variants) {
       const variant = item.product.variants.find(v => v.player_name === player);
       if (variant) {
         maxQuantity = variant.stock || 0;
