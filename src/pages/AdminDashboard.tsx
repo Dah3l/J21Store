@@ -31,6 +31,7 @@ export default function AdminDashboard() {
   const [team, setTeam] = useState('');
   const [price, setPrice] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [originalImageUrl, setOriginalImageUrl] = useState(''); // Para trackear cambios de imagen
   const [variants, setVariants] = useState<VariantForm[]>([]);
 
   useEffect(() => {
@@ -63,6 +64,7 @@ export default function AdminDashboard() {
     setTeam('');
     setPrice('');
     setImageUrl('');
+    setOriginalImageUrl('');
     setVariants([]);
     setEditingProduct(null);
     setShowForm(false);
@@ -111,6 +113,11 @@ export default function AdminDashboard() {
     let productId: string;
 
     if (editingProduct) {
+      // Si la imagen cambió, eliminar la imagen anterior del storage
+      if (originalImageUrl && imageUrl !== originalImageUrl) {
+        await deleteImageFromStorage(originalImageUrl);
+      }
+
       const { error } = await supabase
         .from('products')
         .update(productData)
@@ -153,6 +160,13 @@ export default function AdminDashboard() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar este producto?')) return;
+    
+    // Obtener el producto para eliminar su imagen del storage
+    const productToDelete = products.find(p => p.id === id);
+    if (productToDelete?.image_url) {
+      await deleteImageFromStorage(productToDelete.image_url);
+    }
+    
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) { alert('Error al eliminar: ' + error.message); return; }
     fetchProducts();
@@ -164,6 +178,7 @@ export default function AdminDashboard() {
     setTeam(product.team);
     setPrice(String(product.price));
     setImageUrl(product.image_url);
+    setOriginalImageUrl(product.image_url); // Guardar URL original
     setVariants(
       (product.variants || []).map(v => ({
         id: v.id,
@@ -173,6 +188,27 @@ export default function AdminDashboard() {
       }))
     );
     setShowForm(true);
+  };
+
+  // Helper: Extraer el path del archivo desde la URL de Supabase Storage
+  const extractFilePath = (url: string): string | null => {
+    if (!url || !url.includes('/storage/v1/object/public/')) return null;
+    const match = url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)/);
+    return match ? match[1] : null;
+  };
+
+  // Helper: Eliminar archivo del bucket de Supabase Storage
+  const deleteImageFromStorage = async (imageUrl: string) => {
+    const filePath = extractFilePath(imageUrl);
+    if (!filePath) return;
+
+    const { error } = await supabase.storage
+      .from('jerseys')
+      .remove([filePath]);
+
+    if (error) {
+      console.warn('Error al eliminar imagen del storage:', error.message);
+    }
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
