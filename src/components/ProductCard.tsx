@@ -136,7 +136,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
           {isPreorder && (
             <p className="text-amber-400 text-xs mb-3">
-              ⏱️ Entrega en {deliveryDays} día{deliveryDays !== 1 ? 's' : ''} aprox.
+              🚚 {deliveryDays} días
             </p>
           )}
           <button
