@@ -157,10 +157,10 @@ export default function ProductCard({ product }: ProductCardProps) {
               : isOutOfStock
               ? 'Sin stock'
               : isPreorder
-              ? '🕐 Pedir por encargo'
+              ? '🕐 Encargo'
               : variants.length === 0
               ? 'Sin variantes'
-              : 'Elegir jugador y talla'}
+              : 'Elegir'}
           </button>
         </div>
       </div>
