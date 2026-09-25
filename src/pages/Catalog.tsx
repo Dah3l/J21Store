@@ -83,11 +83,18 @@ export default function Catalog() {
 
   const hasActiveFilters = searchTerm || filterTeam || filterSize || filterAvailability !== 'all';
 
+  // Ordenar: primero en stock, luego por encargo
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    const aPreorder = a.is_preorder ? 1 : 0;
+    const bPreorder = b.is_preorder ? 1 : 0;
+    return aPreorder - bPreorder;
+  });
+
   // Paginación
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(sortedProducts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+  const paginatedProducts = sortedProducts.slice(startIndex, endIndex);
 
   return (
     <div ref={catalogRef} className="max-w-7xl mx-auto px-4 py-6">
@@ -271,7 +278,7 @@ export default function Catalog() {
 
           {/* Results count */}
           <p className="text-center text-zinc-500 text-sm mt-4">
-            Mostrando {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)} de {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''}
+            Mostrando {startIndex + 1}-{Math.min(endIndex, sortedProducts.length)} de {sortedProducts.length} producto{sortedProducts.length !== 1 ? 's' : ''}
           </p>
         </>
       )}
