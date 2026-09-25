@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import Catalog from './pages/Catalog';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import Onboarding from './components/Onboarding';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
                     <Catalog />
                   </main>
                   <Footer />
+                  <Onboarding />
                 </div>
               } />
               <Route path="/admin/login" element={<AdminLogin />} />
