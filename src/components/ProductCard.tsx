@@ -20,15 +20,26 @@ export default function ProductCard({ product }: ProductCardProps) {
   // Bloquear scroll cuando el modal está abierto
   useModalScrollLock(showModal || showLightbox);
 
+  const isPreorder = product.is_preorder || false;
+  const deliveryDays = product.delivery_days || 7;
   const variants = product.variants || [];
   const totalInCart = variants.reduce((sum, v) => 
     sum + v.sizes.reduce((sizeSum, size) => sizeSum + getQuantityInCart(product.id, v.player_name, size), 0), 0
   );
   // Calcular stock total de todas las variantes
   const totalStock = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
-  const isOutOfStock = totalStock <= 0;
+  const isOutOfStock = !isPreorder && totalStock <= 0;
 
   const handleOpenModal = () => {
+    if (isPreorder) {
+      // Para productos por encargo, agregar directamente al carrito
+      const success = addItem(product);
+      if (success) {
+        setFeedback('added');
+        setTimeout(() => setFeedback(null), 1500);
+      }
+      return;
+    }
     if (isOutOfStock || variants.length === 0) return;
     setShowModal(true);
     setSelectedVariant(null);
@@ -100,7 +111,13 @@ export default function ProductCard({ product }: ProductCardProps) {
               {totalInCart} en carrito
             </div>
           )}
-          {variants.length > 1 && !isOutOfStock && (
+          {isPreorder && (
+            <div className="absolute top-2 right-2 bg-amber-500 text-black text-xs font-bold px-2 py-1 rounded-full pointer-events-none flex items-center gap-1">
+              <span>🕐</span>
+              <span>Por encargo</span>
+            </div>
+          )}
+          {variants.length > 1 && !isOutOfStock && !isPreorder && (
             <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full pointer-events-none">
               {variants.length} jugador{variants.length > 1 ? 'es' : ''}
             </div>
@@ -109,6 +126,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="p-4">
           <span className="text-emerald-400 text-xs font-semibold uppercase tracking-wider">{product.team}</span>
           <h3 className="text-white font-semibold text-sm mb-1 truncate">{product.name}</h3>
+          {isPreorder && (
+            <p className="text-amber-400 text-xs mb-2">
+              ⏱️ Entrega en {deliveryDays} día{deliveryDays !== 1 ? 's' : ''} aprox.
+            </p>
+          )}
           <div className="flex items-center justify-between mb-3">
             <span className="text-white font-bold text-lg">${product.price} <span className="text-xs text-zinc-400">USD</span></span>
             {variants.length > 0 && (
@@ -119,14 +141,26 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
           <button
             onClick={handleOpenModal}
-            disabled={isOutOfStock || variants.length === 0}
+            disabled={isOutOfStock || (!isPreorder && variants.length === 0)}
             className={`w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ${
-              isOutOfStock || variants.length === 0
+              feedback === 'added'
+                ? 'bg-emerald-500 text-black'
+                : isOutOfStock || (!isPreorder && variants.length === 0)
                 ? 'bg-zinc-700 text-zinc-500 cursor-not-allowed'
+                : isPreorder
+                ? 'bg-amber-500 hover:bg-amber-400 text-black active:scale-95'
                 : 'bg-emerald-500 hover:bg-emerald-400 text-black active:scale-95'
             }`}
           >
-            {isOutOfStock ? 'Sin stock' : variants.length === 0 ? 'Sin variantes' : 'Elegir jugador y talla'}
+            {feedback === 'added'
+              ? '✓ Agregado'
+              : isOutOfStock
+              ? 'Sin stock'
+              : isPreorder
+              ? '🕐 Pedir por encargo'
+              : variants.length === 0
+              ? 'Sin variantes'
+              : 'Elegir jugador y talla'}
           </button>
         </div>
       </div>

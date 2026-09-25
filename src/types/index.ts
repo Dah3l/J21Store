@@ -15,6 +15,8 @@ export interface Product {
   image_url: string;
   created_at: string;
   variants?: ProductVariant[];
+  is_preorder?: boolean;
+  delivery_days?: number;
 }
 
 export interface CartItem {

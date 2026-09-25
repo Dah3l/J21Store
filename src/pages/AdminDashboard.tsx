@@ -34,6 +34,8 @@ export default function AdminDashboard() {
   const [imageUrl, setImageUrl] = useState('');
   const [originalImageUrl, setOriginalImageUrl] = useState(''); // Para trackear cambios de imagen
   const [variants, setVariants] = useState<VariantForm[]>([]);
+  const [isPreorder, setIsPreorder] = useState(false);
+  const [deliveryDays, setDeliveryDays] = useState('7');
 
   // Bloquear scroll cuando el modal está abierto
   useModalScrollLock(showForm);
@@ -70,6 +72,8 @@ export default function AdminDashboard() {
     setImageUrl('');
     setOriginalImageUrl('');
     setVariants([]);
+    setIsPreorder(false);
+    setDeliveryDays('7');
     setEditingProduct(null);
     setShowForm(false);
   };
@@ -102,7 +106,8 @@ export default function AdminDashboard() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (variants.length === 0) {
+    // Solo validar variantes si NO es preorder
+    if (!isPreorder && variants.length === 0) {
       alert('Debes agregar al menos una variante (jugador + tallas)');
       return;
     }
@@ -112,6 +117,8 @@ export default function AdminDashboard() {
       team,
       price: Number(price),
       image_url: imageUrl,
+      is_preorder: isPreorder,
+      delivery_days: isPreorder ? Number(deliveryDays) : null,
     };
 
     let productId: string;
@@ -141,21 +148,23 @@ export default function AdminDashboard() {
       productId = data.id;
     }
 
-    // Insertar nuevas variantes
-    const variantsToInsert = variants
-      .filter(v => v.player_name.trim() && v.sizes.length > 0)
-      .map(v => ({
-        product_id: productId,
-        player_name: v.player_name.trim(),
-        sizes: v.sizes,
-        stock: v.stock || 0,
-      }));
+    // Insertar nuevas variantes (solo si NO es preorder)
+    if (!isPreorder) {
+      const variantsToInsert = variants
+        .filter(v => v.player_name.trim() && v.sizes.length > 0)
+        .map(v => ({
+          product_id: productId,
+          player_name: v.player_name.trim(),
+          sizes: v.sizes,
+          stock: v.stock || 0,
+        }));
 
-    if (variantsToInsert.length > 0) {
-      const { error } = await supabase
-        .from('product_variants')
-        .insert(variantsToInsert);
-      if (error) { alert('Error al guardar variantes: ' + error.message); return; }
+      if (variantsToInsert.length > 0) {
+        const { error } = await supabase
+          .from('product_variants')
+          .insert(variantsToInsert);
+        if (error) { alert('Error al guardar variantes: ' + error.message); return; }
+      }
     }
 
     resetForm();
@@ -196,6 +205,8 @@ export default function AdminDashboard() {
     setPrice(String(product.price));
     setImageUrl(product.image_url);
     setOriginalImageUrl(product.image_url); // Guardar URL original
+    setIsPreorder(product.is_preorder || false);
+    setDeliveryDays(String(product.delivery_days || 7));
     setVariants(
       (product.variants || []).map(v => ({
         id: v.id,
@@ -463,7 +474,54 @@ export default function AdminDashboard() {
                       )}
                     </div>
 
-                    {/* Variantes */}
+                    {/* Tipo de producto */}
+                    <div className="border-t border-zinc-800 pt-4">
+                      <label className="text-zinc-400 text-xs font-medium mb-2 block">
+                        Tipo de producto
+                      </label>
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setIsPreorder(false)}
+                          className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                            !isPreorder
+                              ? 'bg-emerald-500 text-black'
+                              : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                          }`}
+                        >
+                          📦 En stock
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsPreorder(true)}
+                          className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                            isPreorder
+                              ? 'bg-amber-500 text-black'
+                              : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                          }`}
+                        >
+                          🕐 Por encargo
+                        </button>
+                      </div>
+                      {isPreorder && (
+                        <div className="mt-3">
+                          <label className="text-zinc-400 text-xs font-medium mb-1 block">
+                            Tiempo estimado de entrega (días)
+                          </label>
+                          <input
+                            type="number"
+                            value={deliveryDays}
+                            onChange={e => setDeliveryDays(e.target.value)}
+                            min="1"
+                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none"
+                            placeholder="7"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Variantes (solo si NO es preorder) */}
+                    {!isPreorder && (
                     <div className="border-t border-zinc-800 pt-4">
                       <label className="text-zinc-400 text-xs font-medium mb-3 block">
                         Jugadores y tallas
@@ -536,6 +594,7 @@ export default function AdminDashboard() {
                         + Agregar jugador
                       </button>
                     </div>
+                    )}
 
                     <div className="flex gap-3 pt-2">
                       <button
@@ -597,24 +656,39 @@ export default function AdminDashboard() {
                         <td className="px-4 py-3">
                           <p className="text-white text-sm font-medium truncate max-w-[150px]">{product.name}</p>
                           <p className="text-zinc-400 text-xs">{product.team}</p>
+                          {product.is_preorder && (
+                            <span className="inline-block mt-1 bg-amber-500/20 text-amber-400 text-[10px] font-bold px-1.5 py-0.5 rounded">
+                              🕐 ENCARGO
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-3 hidden md:table-cell">
-                          <p className="text-zinc-300 text-xs">
-                            {product.variants?.length || 0} jugador{(product.variants?.length || 0) !== 1 ? 'es' : ''}
-                          </p>
+                          {product.is_preorder ? (
+                            <p className="text-amber-400 text-xs">
+                              {product.delivery_days || 7} días
+                            </p>
+                          ) : (
+                            <p className="text-zinc-300 text-xs">
+                              {product.variants?.length || 0} jugador{(product.variants?.length || 0) !== 1 ? 'es' : ''}
+                            </p>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <span className="text-white text-sm font-semibold">${product.price} USD</span>
                         </td>
                         <td className="px-4 py-3">
-                          {(() => {
-                            const totalVariantStock = (product.variants || []).reduce((sum, v) => sum + (v.stock || 0), 0);
-                            return (
-                              <span className={`text-sm font-medium ${totalVariantStock <= 0 ? 'text-red-400' : totalVariantStock <= 3 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                                {totalVariantStock}
-                              </span>
-                            );
-                          })()}
+                          {product.is_preorder ? (
+                            <span className="text-amber-400 text-xs font-medium">∞ Ilimitado</span>
+                          ) : (
+                            (() => {
+                              const totalVariantStock = (product.variants || []).reduce((sum, v) => sum + (v.stock || 0), 0);
+                              return (
+                                <span className={`text-sm font-medium ${totalVariantStock <= 0 ? 'text-red-400' : totalVariantStock <= 3 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                                  {totalVariantStock}
+                                </span>
+                              );
+                            })()
+                          )}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex justify-end gap-2">
