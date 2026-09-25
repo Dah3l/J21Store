@@ -4,12 +4,14 @@ import { useBusiness } from './BusinessContext';
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product) => void;
+  addItem: (product: Product) => boolean; // returns true if added, false if stock limit reached
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   total: number;
   itemCount: number;
+  getQuantityInCart: (productId: string) => number;
+  getRemainingStock: (product: Product) => number;
   generateWhatsAppMessage: () => string;
   openWhatsApp: () => void;
 }
@@ -27,7 +29,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('j21-cart', JSON.stringify(items));
   }, [items]);
 
-  const addItem = (product: Product) => {
+  const getQuantityInCart = (productId: string): number => {
+    const item = items.find(i => i.product.id === productId);
+    return item ? item.quantity : 0;
+  };
+
+  const getRemainingStock = (product: Product): number => {
+    const inCart = getQuantityInCart(product.id);
+    return Math.max(0, product.stock - inCart);
+  };
+
+  const addItem = (product: Product): boolean => {
+    // Verificar si hay stock disponible
+    const remaining = getRemainingStock(product);
+    if (remaining <= 0) {
+      return false; // Stock limit reached
+    }
+
     setItems(prev => {
       const existing = prev.find(item => item.product.id === product.id);
       if (existing) {
@@ -39,6 +57,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { product, quantity: 1 }];
     });
+    return true;
   };
 
   const removeItem = (productId: string) => {
@@ -50,9 +69,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeItem(productId);
       return;
     }
+
+    // Obtener el producto para verificar stock
+    const item = items.find(i => i.product.id === productId);
+    if (!item) return;
+
+    // Limitar al stock disponible
+    const maxQuantity = item.product.stock;
+    const clampedQuantity = Math.min(quantity, maxQuantity);
+
     setItems(prev =>
-      prev.map(item =>
-        item.product.id === productId ? { ...item, quantity } : item
+      prev.map(i =>
+        i.product.id === productId ? { ...i, quantity: clampedQuantity } : i
       )
     );
   };
@@ -80,7 +108,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, total, itemCount, generateWhatsAppMessage, openWhatsApp }}>
+    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, total, itemCount, getQuantityInCart, getRemainingStock, generateWhatsAppMessage, openWhatsApp }}>
       {children}
     </CartContext.Provider>
   );
