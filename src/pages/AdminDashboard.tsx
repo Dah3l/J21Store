@@ -31,7 +31,6 @@ export default function AdminDashboard() {
   const [team, setTeam] = useState('');
   const [price, setPrice] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [stock, setStock] = useState('');
   const [variants, setVariants] = useState<VariantForm[]>([]);
 
   useEffect(() => {
@@ -64,7 +63,6 @@ export default function AdminDashboard() {
     setTeam('');
     setPrice('');
     setImageUrl('');
-    setStock('');
     setVariants([]);
     setEditingProduct(null);
     setShowForm(false);
@@ -108,7 +106,6 @@ export default function AdminDashboard() {
       team,
       price: Number(price),
       image_url: imageUrl,
-      stock: Number(stock),
     };
 
     let productId: string;
@@ -167,7 +164,6 @@ export default function AdminDashboard() {
     setTeam(product.team);
     setPrice(String(product.price));
     setImageUrl(product.image_url);
-    setStock(String(product.stock));
     setVariants(
       (product.variants || []).map(v => ({
         id: v.id,
@@ -351,31 +347,17 @@ export default function AdminDashboard() {
                         placeholder="Boca Juniors"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-zinc-400 text-xs font-medium mb-1 block">Precio ($)</label>
-                        <input
-                          type="number"
-                          value={price}
-                          onChange={e => setPrice(e.target.value)}
-                          required
-                          min="0"
-                          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none"
-                          placeholder="25000"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-zinc-400 text-xs font-medium mb-1 block">Stock</label>
-                        <input
-                          type="number"
-                          value={stock}
-                          onChange={e => setStock(e.target.value)}
-                          required
-                          min="0"
-                          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none"
-                          placeholder="10"
-                        />
-                      </div>
+                    <div>
+                      <label className="text-zinc-400 text-xs font-medium mb-1 block">Precio ($)</label>
+                      <input
+                        type="number"
+                        value={price}
+                        onChange={e => setPrice(e.target.value)}
+                        required
+                        min="0"
+                        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none"
+                        placeholder="25000"
+                      />
                     </div>
                     <div>
                       <label className="text-zinc-400 text-xs font-medium mb-1 block">Imagen</label>
@@ -553,9 +535,14 @@ export default function AdminDashboard() {
                           <span className="text-white text-sm font-semibold">${product.price.toLocaleString()}</span>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`text-sm font-medium ${product.stock <= 0 ? 'text-red-400' : product.stock <= 3 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                            {product.stock}
-                          </span>
+                          {(() => {
+                            const totalVariantStock = (product.variants || []).reduce((sum, v) => sum + (v.stock || 0), 0);
+                            return (
+                              <span className={`text-sm font-medium ${totalVariantStock <= 0 ? 'text-red-400' : totalVariantStock <= 3 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                                {totalVariantStock}
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex justify-end gap-2">

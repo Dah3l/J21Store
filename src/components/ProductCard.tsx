@@ -70,9 +70,9 @@ export default function ProductCard({ product }: ProductCardProps) {
               <span className="text-red-400 font-bold text-lg">Sin stock</span>
             </div>
           )}
-          {!isOutOfStock && product.stock <= 3 && totalInCart === 0 && (
+          {!isOutOfStock && totalStock <= 3 && totalInCart === 0 && (
             <div className="absolute top-2 right-2 bg-amber-500 text-black text-xs font-bold px-2 py-1 rounded-full">
-              ¡Últimas {product.stock}!
+              ¡Últimas {totalStock}!
             </div>
           )}
           {totalInCart > 0 && (
