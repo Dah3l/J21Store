@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import JerseyImage from './JerseyImage';
+import OrderForm from './OrderForm';
 
 export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const { items, removeItem, updateQuantity, total, clearCart, openWhatsApp } = useCart();
+  const { items, removeItem, updateQuantity, total, clearCart } = useCart();
+  const [showOrderForm, setShowOrderForm] = useState(false);
 
   return (
     <>
@@ -87,7 +89,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                 <span className="text-white text-2xl font-bold">${total.toLocaleString()}</span>
               </div>
               <button
-                onClick={() => { openWhatsApp(); clearCart(); }}
+                onClick={() => setShowOrderForm(true)}
                 className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -106,6 +108,15 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
           )}
         </div>
       </div>
+
+      {/* Order Form Modal */}
+      <OrderForm
+        isOpen={showOrderForm}
+        onClose={() => setShowOrderForm(false)}
+        items={items}
+        total={total}
+        onSuccess={clearCart}
+      />
     </>
   );
 }
