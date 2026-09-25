@@ -120,9 +120,11 @@ export default function Footer() {
       <div className="border-t border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-emerald-500 rounded-md flex items-center justify-center">
-              <span className="text-black font-extrabold text-xs">J21</span>
-            </div>
+            <img 
+              src="https://fwempizdkfvorzfzjgtg.supabase.co/storage/v1/object/public/jerseys/products/1790305089491-hn6warfj9cb.jpg"
+              alt="Logo"
+              className="w-7 h-7 object-contain rounded-md"
+            />
             <span className="text-zinc-400 text-sm">
               © {new Date().getFullYear()} {settings.business_name}. Todos los derechos reservados.
             </span>

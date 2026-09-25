@@ -105,9 +105,16 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
           <div className="p-6">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-white">Finalizar Pedido</h2>
-                <p className="text-zinc-400 text-sm mt-1">Completá tus datos para continuar</p>
+              <div className="flex items-center gap-3">
+                <img 
+                  src="https://fwempizdkfvorzfzjgtg.supabase.co/storage/v1/object/public/jerseys/products/1790305089491-hn6warfj9cb.jpg"
+                  alt="Logo"
+                  className="w-12 h-12 object-contain rounded-lg"
+                />
+                <div>
+                  <h2 className="text-xl font-bold text-white">Finalizar Pedido</h2>
+                  <p className="text-zinc-400 text-sm mt-1">Completá tus datos para continuar</p>
+                </div>
               </div>
               <button
                 onClick={onClose}
