@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { Product, SIZES } from '../types';
 import ProductCard from '../components/ProductCard';
@@ -12,9 +12,11 @@ export default function Catalog() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTeam, setFilterTeam] = useState('');
   const [filterSize, setFilterSize] = useState('');
+  const [filterAvailability, setFilterAvailability] = useState<'all' | 'stock' | 'preorder'>('all');
   const [teams, setTeams] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 12; // 3 filas × 4 columnas
+  const catalogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -23,7 +25,15 @@ export default function Catalog() {
   // Resetear página cuando cambian filtros o búsqueda
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterTeam, filterSize]);
+  }, [searchTerm, filterTeam, filterSize, filterAvailability]);
+
+  // Scroll al inicio del catálogo cuando cambia la página
+  useEffect(() => {
+    if (catalogRef.current) {
+      const offset = catalogRef.current.offsetTop - 80; // 80px para compensar el header sticky
+      window.scrollTo({ top: offset, behavior: 'smooth' });
+    }
+  }, [currentPage]);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -56,6 +66,11 @@ export default function Catalog() {
     }
     if (filterTeam && p.team !== filterTeam) return false;
     if (filterSize && (!p.variants || !p.variants.some(v => v.sizes.includes(filterSize)))) return false;
+    
+    // Filtro por disponibilidad (stock o encargo)
+    if (filterAvailability === 'stock' && p.is_preorder) return false;
+    if (filterAvailability === 'preorder' && !p.is_preorder) return false;
+    
     return true;
   });
 
@@ -63,9 +78,10 @@ export default function Catalog() {
     setSearchTerm('');
     setFilterTeam('');
     setFilterSize('');
+    setFilterAvailability('all');
   };
 
-  const hasActiveFilters = searchTerm || filterTeam || filterSize;
+  const hasActiveFilters = searchTerm || filterTeam || filterSize || filterAvailability !== 'all';
 
   // Paginación
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -74,7 +90,7 @@ export default function Catalog() {
   const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div ref={catalogRef} className="max-w-7xl mx-auto px-4 py-6">
       {/* Hero */}
       <div className="text-center mb-8">
         <img 
@@ -154,6 +170,18 @@ export default function Catalog() {
               {SIZES.map(size => (
                 <option key={size} value={size}>{size}</option>
               ))}
+            </select>
+          </div>
+          <div className="flex-1 min-w-[140px]">
+            <label className="text-zinc-400 text-xs font-medium mb-1 block">Disponibilidad</label>
+            <select
+              value={filterAvailability}
+              onChange={e => setFilterAvailability(e.target.value as 'all' | 'stock' | 'preorder')}
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none"
+            >
+              <option value="all">Todos</option>
+              <option value="stock">📦 En stock</option>
+              <option value="preorder">🕐 Por encargo</option>
             </select>
           </div>
           {hasActiveFilters && (
