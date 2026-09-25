@@ -7,6 +7,12 @@ export default function AdminDeliveryZones() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState('');
   const [saving, setSaving] = useState(false);
+  
+  // Estado para nueva zona
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newZoneName, setNewZoneName] = useState('');
+  const [newZonePrice, setNewZonePrice] = useState('');
+  const [adding, setAdding] = useState(false);
 
   const handleEdit = (id: string, currentPrice: number) => {
     setEditingId(id);
@@ -42,14 +48,120 @@ export default function AdminDeliveryZones() {
     setEditPrice('');
   };
 
+  const handleAddZone = async () => {
+    if (!newZoneName.trim()) {
+      alert('El nombre de la zona es obligatorio');
+      return;
+    }
+
+    const price = parseInt(newZonePrice);
+    if (isNaN(price) || price < 0) {
+      alert('El precio debe ser un número válido');
+      return;
+    }
+
+    setAdding(true);
+
+    const { error } = await supabase
+      .from('delivery_zones')
+      .insert([{ name: newZoneName.trim(), price }]);
+
+    if (error) {
+      alert('Error al crear zona: ' + error.message);
+    } else {
+      await refreshZones();
+      setNewZoneName('');
+      setNewZonePrice('');
+      setShowAddForm(false);
+    }
+    
+    setAdding(false);
+  };
+
+  const handleDeleteZone = async (id: string, name: string) => {
+    if (!confirm(`¿Eliminar la zona "${name}"?`)) return;
+
+    const { error } = await supabase
+      .from('delivery_zones')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      alert('Error al eliminar: ' + error.message);
+    } else {
+      await refreshZones();
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-white">Zonas de Entrega</h2>
-        <p className="text-zinc-400 text-sm mt-1">
-          Editá los precios de envío para cada zona. Los cambios se reflejan inmediatamente.
-        </p>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h2 className="text-xl font-bold text-white">Zonas de Entrega</h2>
+          <p className="text-zinc-400 text-sm mt-1">
+            Editá los precios de envío para cada zona. Los cambios se reflejan inmediatamente.
+          </p>
+        </div>
+        <button
+          onClick={() => setShowAddForm(!showAddForm)}
+          className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-4 py-2 rounded-lg text-sm transition-colors whitespace-nowrap"
+        >
+          {showAddForm ? '✕ Cancelar' : '+ Nueva Zona'}
+        </button>
       </div>
+
+      {/* Formulario para agregar nueva zona */}
+      {showAddForm && (
+        <div className="bg-zinc-900 border border-emerald-500/30 rounded-xl p-5 mb-6">
+          <h3 className="text-white font-semibold mb-4">Agregar Nueva Zona</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="text-zinc-400 text-xs font-medium mb-1 block">
+                Nombre de la zona <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                value={newZoneName}
+                onChange={e => setNewZoneName(e.target.value)}
+                placeholder="Ej: Playa"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-emerald-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-zinc-400 text-xs font-medium mb-1 block">
+                Precio de envío ($) <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="number"
+                value={newZonePrice}
+                onChange={e => setNewZonePrice(e.target.value)}
+                placeholder="1500"
+                min="0"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-emerald-500 focus:outline-none"
+              />
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleAddZone}
+              disabled={adding || !newZoneName.trim() || !newZonePrice}
+              className="bg-emerald-500 hover:bg-emerald-400 text-black font-bold px-6 py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {adding ? 'Agregando...' : 'Agregar Zona'}
+            </button>
+            <button
+              onClick={() => {
+                setShowAddForm(false);
+                setNewZoneName('');
+                setNewZonePrice('');
+              }}
+              className="px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
         <div className="overflow-x-auto">
@@ -105,12 +217,20 @@ export default function AdminDeliveryZones() {
                         </button>
                       </div>
                     ) : (
-                      <button
-                        onClick={() => handleEdit(zone.id, zone.price)}
-                        className="text-zinc-400 hover:text-emerald-400 text-sm transition-colors"
-                      >
-                        Editar
-                      </button>
+                      <div className="flex justify-end gap-3">
+                        <button
+                          onClick={() => handleEdit(zone.id, zone.price)}
+                          className="text-zinc-400 hover:text-emerald-400 text-sm transition-colors"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDeleteZone(zone.id, zone.name)}
+                          className="text-zinc-400 hover:text-red-400 text-sm transition-colors"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
