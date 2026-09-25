@@ -130,46 +130,15 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="text-white font-bold text-lg">${product.price} <span className="text-xs text-zinc-400">USD</span></span>
             {variants.length > 0 && !isPreorder && (
               <span className="text-zinc-500 text-xs">
-                {variants.reduce((sum, v) => sum + v.sizes.length, 0)} opciones
+                {variants.length} jugador{variants.length > 1 ? 'es' : ''}
               </span>
             )}
           </div>
-          {/* Área de características variables */}
-          <div className="flex-1 mb-3">
-            {isPreorder ? (
-              <p className="text-amber-400 text-xs">
-                ⏱️ Entrega en {deliveryDays} día{deliveryDays !== 1 ? 's' : ''} aprox.
-              </p>
-            ) : variants.length > 0 ? (
-              <div className="space-y-1.5">
-                {variants.slice(0, 2).map((variant, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <span className="text-zinc-300 text-xs font-medium truncate min-w-[50px]">
-                      {variant.player_name}
-                    </span>
-                    <div className="flex flex-wrap gap-0.5">
-                      {variant.sizes.slice(0, 4).map((size, sizeIdx) => (
-                        <span
-                          key={sizeIdx}
-                          className="bg-zinc-800 text-zinc-400 text-[9px] px-1 py-0.5 rounded"
-                        >
-                          {size}
-                        </span>
-                      ))}
-                      {variant.sizes.length > 4 && (
-                        <span className="text-zinc-500 text-[9px]">+{variant.sizes.length - 4}</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {variants.length > 2 && (
-                  <p className="text-zinc-500 text-[10px]">
-                    +{variants.length - 2} jugador{variants.length - 2 > 1 ? 'es' : ''} más
-                  </p>
-                )}
-              </div>
-            ) : null}
-          </div>
+          {isPreorder && (
+            <p className="text-amber-400 text-xs mb-3">
+              ⏱️ Entrega en {deliveryDays} día{deliveryDays !== 1 ? 's' : ''} aprox.
+            </p>
+          )}
           <button
             onClick={handleOpenModal}
             disabled={isOutOfStock || (!isPreorder && variants.length === 0)}
