@@ -108,14 +108,38 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
         <div className="p-4">
           <span className="text-emerald-400 text-xs font-semibold uppercase tracking-wider">{product.team}</span>
-          <h3 className="text-white font-semibold text-sm mb-1 truncate">{product.name}</h3>
+          <h3 className="text-white font-semibold text-sm mb-2 truncate">{product.name}</h3>
+          
+          {/* Mostrar jugadores y tallas disponibles */}
+          {variants.length > 0 && (
+            <div className="mb-3 space-y-2">
+              {variants.slice(0, 3).map((variant, idx) => (
+                <div key={idx} className="flex items-start gap-2">
+                  <span className="text-zinc-300 text-xs font-medium whitespace-nowrap min-w-[60px]">
+                    {variant.player_name}
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {variant.sizes.map((size, sizeIdx) => (
+                      <span
+                        key={sizeIdx}
+                        className="bg-zinc-800 text-zinc-400 text-[10px] px-1.5 py-0.5 rounded border border-zinc-700"
+                      >
+                        {size}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {variants.length > 3 && (
+                <p className="text-zinc-500 text-[10px] italic">
+                  +{variants.length - 3} jugador{variants.length - 3 > 1 ? 'es' : ''} más
+                </p>
+              )}
+            </div>
+          )}
+          
           <div className="flex items-center justify-between mb-3">
             <span className="text-white font-bold text-lg">${product.price} <span className="text-xs text-zinc-400">USD</span></span>
-            {variants.length > 0 && (
-              <span className="text-zinc-500 text-xs">
-                {variants.reduce((sum, v) => sum + v.sizes.length, 0)} opciones
-              </span>
-            )}
           </div>
           <button
             onClick={handleOpenModal}
