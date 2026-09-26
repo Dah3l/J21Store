@@ -129,42 +129,67 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const generateWhatsAppMessage = () => {
-    let message = `🛒 *Nuevo Pedido - ${settings.business_name}*\n\n`;
-    message += `📦 *Productos:*\n`;
+    // Mensaje optimizado para WhatsApp Business (más corto y compatible)
+    let message = `*Nuevo Pedido - ${settings.business_name}*\n\n`;
+    message += `*Productos:*\n`;
+    
     items.forEach(item => {
       const isPreorder = item.product.is_preorder || false;
       const deliveryDays = item.product.delivery_days || 7;
       
-      message += `• ${item.product.name} (${item.product.team})`;
+      message += `- ${item.product.name} (${item.product.team})`;
       if (isPreorder) {
-        message += ` 🕐 *POR ENCARGO*`;
+        message += ` [POR ENCARGO]`;
       }
       message += `\n`;
       
       if (item.selectedPlayer) {
-        message += `  👤 Jugador: ${item.selectedPlayer}\n`;
+        message += `  Jugador: ${item.selectedPlayer}\n`;
       }
       if (item.selectedSize) {
-        message += `  📏 Talla: ${item.selectedSize}\n`;
+        message += `  Talla: ${item.selectedSize}\n`;
       }
-      message += `  📊 Cantidad: ${item.quantity}\n`;
-      message += `  💵 Precio: $${item.product.price} USD c/u\n`;
-      message += `  💰 Subtotal: $${item.product.price * item.quantity} USD\n`;
+      message += `  Cantidad: ${item.quantity}\n`;
+      message += `  Precio: $${item.product.price} USD c/u\n`;
+      message += `  Subtotal: $${item.product.price * item.quantity} USD\n`;
       if (isPreorder) {
-        message += `  ⏱️ Entrega estimada: ${deliveryDays} días\n`;
+        message += `  Entrega: ${deliveryDays} dias\n`;
       }
       message += `\n`;
     });
-    message += `━━━━━━━━━━━━━━━━━━━━\n`;
-    message += `💵 *Total Productos: $${total} USD*\n\n`;
-    message += '¡Hola! Me gustaría hacer este pedido.';
+    
+    message += `-------------------\n`;
+    message += `*Total: $${total} USD*\n\n`;
+    message += 'Hola! Me gustaria hacer este pedido.';
+    
     return encodeURIComponent(message);
   };
 
   const openWhatsApp = () => {
     const message = generateWhatsAppMessage();
     const phone = settings.whatsapp_number || DEFAULT_WHATSAPP_NUMBER;
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    
+    // Detectar si es móvil
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // En móvil, usar el esquema whatsapp:// que respeta mejor la app por defecto
+      // El usuario puede configurar WhatsApp Business como app por defecto
+      const whatsappUrl = `whatsapp://send?phone=${phone}&text=${message}`;
+      
+      // Intentar abrir con el esquema nativo primero
+      window.location.href = whatsappUrl;
+      
+      // Fallback: si después de 2 segundos no se abrió, usar wa.me
+      setTimeout(() => {
+        if (!document.hidden) {
+          window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+        }
+      }, 2000);
+    } else {
+      // En desktop, usar wa.me normalmente
+      window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    }
   };
 
   return (
