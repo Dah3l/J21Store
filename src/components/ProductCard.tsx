@@ -127,7 +127,16 @@ export default function ProductCard({ product }: ProductCardProps) {
           <span className="text-emerald-400 text-xs font-semibold uppercase tracking-wider">{product.team}</span>
           <h3 className="text-white font-semibold text-sm mb-1 truncate">{product.name}</h3>
           <div className="flex items-center justify-between mb-3">
-            <span className="text-white font-bold text-lg">${product.price} <span className="text-xs text-zinc-400">USD</span></span>
+            <div className="flex items-baseline gap-2">
+              {product.original_price && product.original_price > product.price ? (
+                <>
+                  <span className="text-zinc-500 text-sm line-through">${product.original_price}</span>
+                  <span className="text-emerald-400 font-bold text-lg">${product.price} <span className="text-xs">USD</span></span>
+                </>
+              ) : (
+                <span className="text-white font-bold text-lg">${product.price} <span className="text-xs text-zinc-400">USD</span></span>
+              )}
+            </div>
             {!isPreorder && variants.length > 0 && (
               <span className="text-zinc-500 text-xs">
                 {variants.length} jugador{variants.length > 1 ? 'es' : ''}
@@ -257,7 +266,16 @@ export default function ProductCard({ product }: ProductCardProps) {
               <div className="border-t border-zinc-800 pt-4 mt-4">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-zinc-400 text-sm">Precio:</span>
-                  <span className="text-emerald-400 font-bold text-lg">${product.price} USD</span>
+                  <div className="flex items-baseline gap-2">
+                    {product.original_price && product.original_price > product.price ? (
+                      <>
+                        <span className="text-zinc-500 text-sm line-through">${product.original_price}</span>
+                        <span className="text-emerald-400 font-bold text-lg">${product.price} USD</span>
+                      </>
+                    ) : (
+                      <span className="text-emerald-400 font-bold text-lg">${product.price} USD</span>
+                    )}
+                  </div>
                 </div>
                 {selectedVariant && selectedSize && (
                   <p className="text-zinc-500 text-xs mb-3">

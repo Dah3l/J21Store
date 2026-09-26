@@ -12,6 +12,7 @@ export interface Product {
   name: string;
   team: string;
   price: number;
+  original_price?: number;
   image_url: string;
   created_at: string;
   variants?: ProductVariant[];

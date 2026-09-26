@@ -31,6 +31,7 @@ export default function AdminDashboard() {
   const [name, setName] = useState('');
   const [team, setTeam] = useState('');
   const [price, setPrice] = useState('');
+  const [originalPrice, setOriginalPrice] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [originalImageUrl, setOriginalImageUrl] = useState(''); // Para trackear cambios de imagen
   const [variants, setVariants] = useState<VariantForm[]>([]);
@@ -69,6 +70,7 @@ export default function AdminDashboard() {
     setName('');
     setTeam('');
     setPrice('20'); // Precio por defecto en USD
+    setOriginalPrice('');
     setImageUrl('');
     setOriginalImageUrl('');
     setVariants([]);
@@ -116,6 +118,7 @@ export default function AdminDashboard() {
       name,
       team,
       price: Number(price),
+      original_price: originalPrice ? Number(originalPrice) : null,
       image_url: imageUrl,
       is_preorder: isPreorder,
       delivery_days: isPreorder ? Number(deliveryDays) : null,
@@ -203,6 +206,7 @@ export default function AdminDashboard() {
     setName(product.name);
     setTeam(product.team);
     setPrice(String(product.price));
+    setOriginalPrice(product.original_price ? String(product.original_price) : '');
     setImageUrl(product.image_url);
     setOriginalImageUrl(product.image_url); // Guardar URL original
     setIsPreorder(product.is_preorder || false);
@@ -444,6 +448,18 @@ export default function AdminDashboard() {
                       />
                     </div>
                     <div>
+                      <label className="text-zinc-400 text-xs font-medium mb-1 block">Precio Original (USD) <span className="text-zinc-500">(opcional, para mostrar oferta)</span></label>
+                      <input
+                        type="number"
+                        value={originalPrice}
+                        onChange={e => setOriginalPrice(e.target.value)}
+                        min="0"
+                        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none"
+                        placeholder="Dejar vacío si no hay oferta"
+                      />
+                      <p className="text-zinc-500 text-xs mt-1">Si llenas este campo, se mostrará tachado junto al precio actual</p>
+                    </div>
+                    <div>
                       <label className="text-zinc-400 text-xs font-medium mb-1 block">Imagen</label>
                       <div className="flex gap-2">
                         <input
@@ -674,7 +690,14 @@ export default function AdminDashboard() {
                           )}
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-white text-sm font-semibold">${product.price} USD</span>
+                          {product.original_price && product.original_price > product.price ? (
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-zinc-500 text-xs line-through">${product.original_price}</span>
+                              <span className="text-emerald-400 text-sm font-semibold">${product.price} USD</span>
+                            </div>
+                          ) : (
+                            <span className="text-white text-sm font-semibold">${product.price} USD</span>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           {product.is_preorder ? (
