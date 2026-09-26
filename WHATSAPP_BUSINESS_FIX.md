@@ -1,10 +1,14 @@
 # Solución para WhatsApp Business
 
-## 🎯 El Problema
+## 🎯 Los Problemas
 
-Cuando un usuario tiene **WhatsApp Business** instalado y hace clic en un enlace `wa.me` desde el navegador, a veces el sistema abre **WhatsApp normal** en lugar de **WhatsApp Business**.
+### 1. WhatsApp Business vs WhatsApp Normal
+Cuando un usuario tiene **WhatsApp Business** instalado y hace clic en un enlace `wa.me` desde el navegador, el sistema a veces abre **WhatsApp normal** en lugar de **WhatsApp Business**.
 
 Esto ocurre porque el enlace `https://wa.me/` usa el esquema `whatsapp://` internamente, y si el usuario tiene ambas apps instaladas, el sistema operativo puede elegir la incorrecta.
+
+### 2. Número de Teléfono Incorrecto
+El esquema `whatsapp://send?phone=...` requiere que el número tenga el formato correcto con el símbolo `+` al inicio. Sin el `+`, WhatsApp Business muestra la lista de contactos en lugar de abrir el chat directo con el número configurado.
 
 ## ✅ Solución Implementada
 
@@ -16,21 +20,31 @@ El código ahora detecta si el usuario está en un dispositivo móvil:
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 ```
 
-### 2. Esquema Nativo en Móvil
+### 2. Formato Correcto del Número
 
-En dispositivos móviles, ahora se usa el esquema nativo `whatsapp://` que **respeta mejor la app por defecto** configurada por el usuario:
+El número de teléfono ahora se formatea automáticamente para incluir el símbolo `+` al inicio, que es requerido por el esquema nativo de WhatsApp:
+
+```typescript
+// Asegurar que el número tenga el formato correcto (con + al inicio)
+const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
+```
+
+### 3. Esquema Nativo en Móvil
+
+En dispositivos móviles, ahora se usa el esquema nativo `whatsapp://` con el número formateado correctamente, lo que **respeta mejor la app por defecto** configurada por el usuario:
 
 ```typescript
 if (isMobile) {
-  // Usar esquema nativo que respeta la app por defecto
-  window.location.href = `whatsapp://send?phone=${phone}&text=${message}`;
+  // Usar esquema nativo con número formateado
+  const whatsappUrl = `whatsapp://send?phone=${formattedPhone}&text=${message}`;
+  window.location.href = whatsappUrl;
   
-  // Fallback después de 2 segundos
+  // Fallback después de 2.5 segundos
   setTimeout(() => {
     if (!document.hidden) {
       window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
     }
-  }, 2000);
+  }, 2500);
 }
 ```
 
@@ -39,6 +53,23 @@ if (isMobile) {
 Si el esquema nativo no funciona (por ejemplo, si WhatsApp no está instalado), después de 2 segundos se intenta abrir con `wa.me` como respaldo.
 
 ## 📱 Configuración del Usuario (Importante)
+
+### Formato del Número en el Panel de Administración
+
+El número de WhatsApp configurado en el panel de administración debe estar en formato internacional **sin espacios ni caracteres especiales**:
+
+✅ **Correcto:**
+- `5351234567` (sin +, el código lo agrega automáticamente)
+- `+5351234567` (con +, el código lo respeta)
+
+❌ **Incorrecto:**
+- `53 51234567` (con espacios)
+- `+53 51234567` (con espacios)
+- `(535) 123-4567` (con paréntesis y guiones)
+
+El código ahora formatea automáticamente el número agregando el `+` si no está presente.
+
+### Configurar WhatsApp Business como App por Defecto
 
 Para que **WhatsApp Business** se abra correctamente, el usuario debe configurarlo como **app por defecto** en su dispositivo:
 
@@ -71,10 +102,12 @@ Si el problema persiste, el usuario puede:
 ### Flujo en Móvil:
 1. Usuario hace clic en "Enviar por WhatsApp"
 2. El sistema detecta que es móvil
-3. Intenta abrir con `whatsapp://send?phone=...`
-4. El sistema operativo abre la app de WhatsApp configurada por defecto
-5. Si el usuario configuró WhatsApp Business como predeterminada → ✅ Se abre Business
-6. Si algo falla, después de 2 segundos intenta con `wa.me`
+3. Formatea el número: `5351234567` → `+5351234567`
+4. Intenta abrir con `whatsapp://send?phone=+5351234567&text=...`
+5. El sistema operativo abre la app de WhatsApp configurada por defecto
+6. Si el usuario configuró WhatsApp Business como predeterminada → ✅ Se abre Business
+7. WhatsApp Business abre el chat directo con el número configurado (no muestra lista de contactos)
+8. Si algo falla, después de 2.5 segundos intenta con `wa.me`
 
 ### Flujo en Desktop:
 1. Usuario hace clic en "Enviar por WhatsApp"
@@ -87,7 +120,7 @@ Si el problema persiste, el usuario puede:
 | Método | Ventaja | Desventaja |
 |--------|---------|------------|
 | `https://wa.me/` | Funciona en todos lados | No respeta app por defecto en móvil |
-| `whatsapp://send?phone=` | Respeta app por defecto | Solo funciona si WhatsApp está instalado |
+| `whatsapp://send?phone=+...` | Respeta app por defecto, abre chat directo | Solo funciona si WhatsApp está instalado |
 | Copiar mensaje | Funciona siempre | Requiere acción manual del usuario |
 
 ## 🎯 Recomendación para Usuarios
@@ -111,8 +144,15 @@ Si el problema persiste, el usuario puede:
 
 La solución implementada:
 - ✅ Detecta automáticamente si es móvil o desktop
+- ✅ Formatea el número de teléfono con el símbolo `+` al inicio
 - ✅ Usa el esquema nativo `whatsapp://` en móvil (respeta app por defecto)
+- ✅ WhatsApp Business abre el chat directo con el número configurado (no muestra lista de contactos)
 - ✅ Tiene fallback automático si algo falla
 - ✅ Mantiene el botón "Copiar mensaje" como alternativa manual
+- ✅ Mensajes con emojis para mayor elegancia
 
-**El usuario solo necesita configurar WhatsApp Business como app por defecto en su dispositivo para que funcione correctamente.**
+**El usuario solo necesita:**
+1. Configurar el número en el panel de administración sin espacios (ej: `5351234567`)
+2. Configurar WhatsApp Business como app por defecto en su dispositivo
+
+Con esto, el sistema funciona correctamente en todos los escenarios.

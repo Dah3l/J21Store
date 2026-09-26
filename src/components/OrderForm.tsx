@@ -40,57 +40,57 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
       ? customAddress 
       : zone?.name || '';
 
-    // Generar mensaje de WhatsApp optimizado para WhatsApp Business
-    let message = `*Nuevo Pedido - ${settings.business_name}*\n\n`;
-    message += `*Cliente:* ${name}\n`;
-    message += `*Direccion:* ${finalAddress}\n`;
-    message += `*Hora de retiro:* ${pickupTime}\n\n`;
-    message += `*PRODUCTOS:*\n\n`;
+    let message = `🛒 *Nuevo Pedido - ${settings.business_name}*\n\n`;
+    message += `👤 *Cliente:* ${name}\n`;
+    message += `📍 *Dirección:* ${finalAddress}\n`;
+    message += `🕐 *Hora de retiro:* ${pickupTime}\n\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `📦 *PRODUCTOS:*\n\n`;
     
     items.forEach(item => {
       const isPreorder = item.product.is_preorder || false;
       const deliveryDays = item.product.delivery_days || 7;
       
-      message += `- ${item.product.name} (${item.product.team})`;
+      message += `• ${item.product.name} (${item.product.team})`;
       if (isPreorder) {
-        message += ` [POR ENCARGO]`;
+        message += ` 🕐 *POR ENCARGO*`;
       }
       message += `\n`;
       
       if (item.selectedPlayer) {
-        message += `  Jugador: ${item.selectedPlayer}\n`;
+        message += `  👤 Jugador: ${item.selectedPlayer}\n`;
       }
       if (item.selectedSize) {
-        message += `  Talla: ${item.selectedSize}\n`;
+        message += `  📏 Talla: ${item.selectedSize}\n`;
       }
-      message += `  Cantidad: ${item.quantity}\n`;
-      message += `  Precio: $${item.product.price} USD c/u\n`;
-      message += `  Subtotal: $${item.product.price * item.quantity} USD\n`;
+      message += `  📊 Cantidad: ${item.quantity}\n`;
+      message += `  💵 Precio: $${item.product.price} USD c/u\n`;
+      message += `  💰 Subtotal: $${item.product.price * item.quantity} USD\n`;
       if (isPreorder) {
-        message += `  Entrega: ${deliveryDays} dias\n`;
+        message += `  🚚 Entrega: ${deliveryDays} días\n`;
       }
       message += `\n`;
     });
     
-    message += `-------------------\n`;
-    message += `*Total Productos: $${total} USD*\n\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `💵 *Total Productos: $${total} USD*\n\n`;
     
     if (deliveryPrice > 0) {
-      message += `*Envio (${zone?.name}): $${deliveryPrice} CUP*\n\n`;
+      message += `🚚 *Envío (${zone?.name}): $${deliveryPrice} CUP*\n\n`;
     } else if (selectedZone === 'other') {
-      message += `*Envio: A coordinar*\n\n`;
+      message += `🚚 *Envío: A coordinar*\n\n`;
     }
     
-    message += `-------------------\n`;
-    message += `*RESUMEN:*\n`;
-    message += `- Productos: $${total} USD\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `💰 *RESUMEN:*\n`;
+    message += `• Productos: $${total} USD\n`;
     if (deliveryPrice > 0) {
-      message += `- Envio: $${deliveryPrice} CUP\n`;
+      message += `• Envío: $${deliveryPrice} CUP\n`;
     }
-    message += `\nHola! Me gustaria hacer este pedido.`;
+    message += `\n¡Hola! Me gustaría hacer este pedido.`;
     
     if (notes.trim()) {
-      message += `\n\n*Notas:* ${notes}`;
+      message += `\n\n📝 *Notas:* ${notes}`;
     }
 
     return message;
