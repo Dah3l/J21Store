@@ -14,13 +14,18 @@ const steps: OnboardingStep[] = [
   },
   {
     title: 'Busca y filtra',
-    description: 'Usa la barra de búsqueda para encontrar por nombre, equipo o jugador. Filtra por equipo, talla o disponibilidad: productos en stock o por encargo.',
+    description: 'Usa la barra de búsqueda para encontrar por nombre, equipo o jugador. Filtra por equipo, talla, disponibilidad (stock o encargo) y ofertas 🔥 para encontrar justo lo que necesitas.',
     emoji: '🔍',
   },
   {
     title: 'Dos tipos de productos',
-    description: '📦 En stock: disponibles para entrega inmediata. 🕐 Por encargo: se fabrican especialmente para ti con tiempo de entrega estimado. ¡Elige según tu necesidad!',
+    description: '📦 En stock: disponibles para entrega inmediata con jugadores y tallas específicas. 🕐 Por encargo: se fabrican especialmente para ti con tiempo de entrega estimado. ¡Elige según tu necesidad!',
     emoji: '📋',
+  },
+  {
+    title: 'Precios con oferta',
+    description: 'Algunos productos tienen precios especiales. Si ves un precio tachado (~~$25~~) junto al precio actual ($20), ¡es una oferta! Aprovecha los descuentos.',
+    emoji: '💰',
   },
   {
     title: 'Ve las fotos en grande',
@@ -33,8 +38,13 @@ const steps: OnboardingStep[] = [
     emoji: '👕',
   },
   {
+    title: 'Carrito inteligente',
+    description: 'El carrito guarda tus productos y controla el stock automáticamente. Puedes ajustar cantidades, eliminar productos y ver el total en USD. ¡Se mantiene aunque cierres el navegador!',
+    emoji: '🛒',
+  },
+  {
     title: 'Haz tu pedido',
-    description: 'Revisa tu carrito, haz clic en "Pedir por WhatsApp". Completa tus datos, zona de entrega y el pedido se envía automáticamente con todos los detalles.',
+    description: 'Revisa tu carrito, haz clic en "Pedir por WhatsApp". Completa tus datos, zona de entrega (con costo en CUP) y hora de retiro. El pedido se envía automáticamente con todos los detalles.',
     emoji: '📱',
   },
 ];
@@ -44,7 +54,7 @@ export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
-    const onboardingVersion = 'v2'; // Actualizar versión para mostrar tutorial actualizado
+    const onboardingVersion = 'v3'; // Actualizar versión para mostrar tutorial actualizado
     const hasSeenOnboarding = localStorage.getItem('j21-onboarding-seen');
     
     if (hasSeenOnboarding !== onboardingVersion) {
@@ -69,7 +79,7 @@ export default function Onboarding() {
   };
 
   const handleClose = () => {
-    localStorage.setItem('j21-onboarding-seen', 'v2');
+    localStorage.setItem('j21-onboarding-seen', 'v3');
     setIsOpen(false);
   };
 
