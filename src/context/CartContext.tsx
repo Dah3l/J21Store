@@ -168,7 +168,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const openWhatsApp = () => {
     const message = generateWhatsAppMessage();
     const phone = settings.whatsapp_number || DEFAULT_WHATSAPP_NUMBER;
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    
+    // Detectar si es móvil
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // En móvil, usar el esquema whatsapp:// que respeta mejor la app por defecto
+      // El usuario puede configurar WhatsApp Business como app por defecto
+      const whatsappUrl = `whatsapp://send?phone=${phone}&text=${message}`;
+      
+      // Intentar abrir con el esquema nativo primero
+      window.location.href = whatsappUrl;
+      
+      // Fallback: si después de 2 segundos no se abrió, usar wa.me
+      setTimeout(() => {
+        if (!document.hidden) {
+          window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+        }
+      }, 2000);
+    } else {
+      // En desktop, usar wa.me normalmente
+      window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    }
   };
 
   return (

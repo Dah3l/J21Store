@@ -104,8 +104,24 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
     const encodedMessage = encodeURIComponent(message);
     const phone = settings.whatsapp_number || DEFAULT_WHATSAPP_NUMBER;
     
-    // Abrir WhatsApp
-    window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
+    // Detectar si es móvil
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // En móvil, usar el esquema whatsapp:// que respeta mejor la app por defecto
+      const whatsappUrl = `whatsapp://send?phone=${phone}&text=${encodedMessage}`;
+      window.location.href = whatsappUrl;
+      
+      // Fallback: si después de 2 segundos no se abrió, usar wa.me
+      setTimeout(() => {
+        if (!document.hidden) {
+          window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
+        }
+      }, 2000);
+    } else {
+      // En desktop, usar wa.me normalmente
+      window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
+    }
     
     // Limpiar formulario y cerrar
     setName('');
