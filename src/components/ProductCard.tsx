@@ -126,8 +126,8 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="p-4 flex-1 flex flex-col">
           <span className="text-emerald-400 text-xs font-semibold uppercase tracking-wider">{product.team}</span>
           <h3 className="text-white font-semibold text-sm mb-1 truncate">{product.name}</h3>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-baseline gap-2">
+          <div className="mb-3">
+            <div className="flex items-baseline gap-2 mb-1">
               {product.original_price && product.original_price > product.price ? (
                 <>
                   <span className="text-zinc-500 text-sm line-through">${product.original_price}</span>
