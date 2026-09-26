@@ -129,35 +129,39 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const generateWhatsAppMessage = () => {
-    let message = `🛒 *Nuevo Pedido - ${settings.business_name}*\n\n`;
-    message += `📦 *Productos:*\n`;
+    // Mensaje optimizado para WhatsApp Business (más corto y compatible)
+    let message = `*Nuevo Pedido - ${settings.business_name}*\n\n`;
+    message += `*Productos:*\n`;
+    
     items.forEach(item => {
       const isPreorder = item.product.is_preorder || false;
       const deliveryDays = item.product.delivery_days || 7;
       
-      message += `• ${item.product.name} (${item.product.team})`;
+      message += `- ${item.product.name} (${item.product.team})`;
       if (isPreorder) {
-        message += ` 🕐 *POR ENCARGO*`;
+        message += ` [POR ENCARGO]`;
       }
       message += `\n`;
       
       if (item.selectedPlayer) {
-        message += `  👤 Jugador: ${item.selectedPlayer}\n`;
+        message += `  Jugador: ${item.selectedPlayer}\n`;
       }
       if (item.selectedSize) {
-        message += `  📏 Talla: ${item.selectedSize}\n`;
+        message += `  Talla: ${item.selectedSize}\n`;
       }
-      message += `  📊 Cantidad: ${item.quantity}\n`;
-      message += `  💵 Precio: $${item.product.price} USD c/u\n`;
-      message += `  💰 Subtotal: $${item.product.price * item.quantity} USD\n`;
+      message += `  Cantidad: ${item.quantity}\n`;
+      message += `  Precio: $${item.product.price} USD c/u\n`;
+      message += `  Subtotal: $${item.product.price * item.quantity} USD\n`;
       if (isPreorder) {
-        message += `  ⏱️ Entrega estimada: ${deliveryDays} días\n`;
+        message += `  Entrega: ${deliveryDays} dias\n`;
       }
       message += `\n`;
     });
-    message += `━━━━━━━━━━━━━━━━━━━━\n`;
-    message += `💵 *Total Productos: $${total} USD*\n\n`;
-    message += '¡Hola! Me gustaría hacer este pedido.';
+    
+    message += `-------------------\n`;
+    message += `*Total: $${total} USD*\n\n`;
+    message += 'Hola! Me gustaria hacer este pedido.';
+    
     return encodeURIComponent(message);
   };
 

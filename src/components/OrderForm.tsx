@@ -34,70 +34,73 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
 
   const deliveryPrice = getDeliveryPrice();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-
-    // Determinar la dirección final
+  const generateMessage = () => {
     const zone = zones.find(z => z.id === selectedZone);
     const finalAddress = selectedZone === 'other' 
       ? customAddress 
       : zone?.name || '';
 
-    // Generar mensaje de WhatsApp con los datos del formulario
-    let message = `🛒 *Nuevo Pedido - ${settings.business_name}*\n\n`;
-    message += `👤 *Cliente:* ${name}\n`;
-    message += `📍 *Dirección:* ${finalAddress}\n`;
-    message += `🕐 *Hora de retiro:* ${pickupTime}\n\n`;
-    message += `━━━━━━━━━━━━━━━━━━━━\n`;
-    message += `📦 *PRODUCTOS:*\n\n`;
+    // Generar mensaje de WhatsApp optimizado para WhatsApp Business
+    let message = `*Nuevo Pedido - ${settings.business_name}*\n\n`;
+    message += `*Cliente:* ${name}\n`;
+    message += `*Direccion:* ${finalAddress}\n`;
+    message += `*Hora de retiro:* ${pickupTime}\n\n`;
+    message += `*PRODUCTOS:*\n\n`;
     
     items.forEach(item => {
       const isPreorder = item.product.is_preorder || false;
       const deliveryDays = item.product.delivery_days || 7;
       
-      message += `• ${item.product.name} (${item.product.team})`;
+      message += `- ${item.product.name} (${item.product.team})`;
       if (isPreorder) {
-        message += ` 🕐 *POR ENCARGO*`;
+        message += ` [POR ENCARGO]`;
       }
       message += `\n`;
       
       if (item.selectedPlayer) {
-        message += `  👤 Jugador: ${item.selectedPlayer}\n`;
+        message += `  Jugador: ${item.selectedPlayer}\n`;
       }
       if (item.selectedSize) {
-        message += `  📏 Talla: ${item.selectedSize}\n`;
+        message += `  Talla: ${item.selectedSize}\n`;
       }
-      message += `  📊 Cantidad: ${item.quantity}\n`;
-      message += `  💵 Precio: $${item.product.price} USD c/u\n`;
-      message += `  💰 Subtotal: $${item.product.price * item.quantity} USD\n`;
+      message += `  Cantidad: ${item.quantity}\n`;
+      message += `  Precio: $${item.product.price} USD c/u\n`;
+      message += `  Subtotal: $${item.product.price * item.quantity} USD\n`;
       if (isPreorder) {
-        message += `  ⏱️ Entrega estimada: ${deliveryDays} días\n`;
+        message += `  Entrega: ${deliveryDays} dias\n`;
       }
       message += `\n`;
     });
     
-    message += `━━━━━━━━━━━━━━━━━━━━\n`;
-    message += `💵 *Total Productos: $${total} USD*\n\n`;
+    message += `-------------------\n`;
+    message += `*Total Productos: $${total} USD*\n\n`;
     
     if (deliveryPrice > 0) {
-      message += `🚚 *Envío (${zone?.name}): $${deliveryPrice} CUP*\n\n`;
+      message += `*Envio (${zone?.name}): $${deliveryPrice} CUP*\n\n`;
     } else if (selectedZone === 'other') {
-      message += `🚚 *Envío: A coordinar*\n\n`;
+      message += `*Envio: A coordinar*\n\n`;
     }
     
-    message += `━━━━━━━━━━━━━━━━━━━━\n`;
-    message += `💰 *RESUMEN:*\n`;
-    message += `• Productos: $${total} USD\n`;
+    message += `-------------------\n`;
+    message += `*RESUMEN:*\n`;
+    message += `- Productos: $${total} USD\n`;
     if (deliveryPrice > 0) {
-      message += `• Envío: $${deliveryPrice} CUP\n`;
+      message += `- Envio: $${deliveryPrice} CUP\n`;
     }
-    message += `\n¡Hola! Me gustaría hacer este pedido.`;
+    message += `\nHola! Me gustaria hacer este pedido.`;
     
     if (notes.trim()) {
-      message += `\n\n📝 *Notas:* ${notes}`;
+      message += `\n\n*Notas:* ${notes}`;
     }
 
+    return message;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    const message = generateMessage();
     const encodedMessage = encodeURIComponent(message);
     const phone = settings.whatsapp_number || DEFAULT_WHATSAPP_NUMBER;
     
@@ -266,11 +269,11 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
               </div>
 
               {/* Botones */}
-              <div className="flex gap-3 pt-2">
+              <div className="flex flex-col gap-3 pt-2">
                 <button
                   type="submit"
                   disabled={submitting || !name || !selectedZone || !pickupTime || (selectedZone === 'other' && !customAddress)}
-                  className="flex-1 bg-green-500 hover:bg-green-400 text-black font-bold py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
@@ -280,8 +283,23 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
                 </button>
                 <button
                   type="button"
+                  onClick={() => {
+                    // Copiar mensaje al portapapeles como fallback
+                    const msg = generateMessage();
+                    navigator.clipboard.writeText(msg);
+                    alert('✓ Mensaje copiado al portapapeles. Ahora puedes pegarlo en WhatsApp.');
+                  }}
+                  className="w-full bg-zinc-700 hover:bg-zinc-600 text-white font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  Copiar mensaje (fallback)
+                </button>
+                <button
+                  type="button"
                   onClick={onClose}
-                  className="px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors"
+                  className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors py-2.5"
                 >
                   Cancelar
                 </button>
