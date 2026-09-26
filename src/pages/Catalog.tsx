@@ -13,6 +13,7 @@ export default function Catalog() {
   const [filterTeam, setFilterTeam] = useState('');
   const [filterSize, setFilterSize] = useState('');
   const [filterAvailability, setFilterAvailability] = useState<'all' | 'stock' | 'preorder'>('all');
+  const [filterOffers, setFilterOffers] = useState<'all' | 'offers'>('all');
   const [teams, setTeams] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 12; // 3 filas × 4 columnas
@@ -25,7 +26,7 @@ export default function Catalog() {
   // Resetear página cuando cambian filtros o búsqueda
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterTeam, filterSize, filterAvailability]);
+  }, [searchTerm, filterTeam, filterSize, filterAvailability, filterOffers]);
 
   // Scroll al inicio del catálogo cuando cambia la página
   useEffect(() => {
@@ -71,6 +72,9 @@ export default function Catalog() {
     if (filterAvailability === 'stock' && p.is_preorder) return false;
     if (filterAvailability === 'preorder' && !p.is_preorder) return false;
     
+    // Filtro por ofertas
+    if (filterOffers === 'offers' && (!p.original_price || p.original_price <= p.price)) return false;
+    
     return true;
   });
 
@@ -79,9 +83,10 @@ export default function Catalog() {
     setFilterTeam('');
     setFilterSize('');
     setFilterAvailability('all');
+    setFilterOffers('all');
   };
 
-  const hasActiveFilters = searchTerm || filterTeam || filterSize || filterAvailability !== 'all';
+  const hasActiveFilters = searchTerm || filterTeam || filterSize || filterAvailability !== 'all' || filterOffers !== 'all';
 
   // Ordenar: primero en stock, luego por encargo
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -189,6 +194,17 @@ export default function Catalog() {
               <option value="all">Todos</option>
               <option value="stock">📦 En stock</option>
               <option value="preorder">🕐 Por encargo</option>
+            </select>
+          </div>
+          <div className="flex-1 min-w-[140px]">
+            <label className="text-zinc-400 text-xs font-medium mb-1 block">Ofertas</label>
+            <select
+              value={filterOffers}
+              onChange={e => setFilterOffers(e.target.value as 'all' | 'offers')}
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none"
+            >
+              <option value="all">Todos</option>
+              <option value="offers">🔥 Solo ofertas</option>
             </select>
           </div>
           {hasActiveFilters && (

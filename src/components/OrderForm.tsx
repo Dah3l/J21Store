@@ -114,13 +114,6 @@ export default function OrderForm({ isOpen, onClose, items, total, onSuccess }: 
       // En móvil, usar el esquema whatsapp:// con formato correcto
       const whatsappUrl = `whatsapp://send?phone=${formattedPhone}&text=${encodedMessage}`;
       window.location.href = whatsappUrl;
-      
-      // Fallback: si después de 2.5 segundos no se abrió, usar wa.me
-      setTimeout(() => {
-        if (!document.hidden) {
-          window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
-        }
-      }, 2500);
     } else {
       // En desktop, usar wa.me normalmente
       window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');

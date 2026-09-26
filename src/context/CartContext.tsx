@@ -176,18 +176,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     
     if (isMobile) {
       // En móvil, usar el esquema whatsapp:// con formato correcto
-      // El formato correcto es: whatsapp://send?phone=+XXXXXXXXX&text=mensaje
       const whatsappUrl = `whatsapp://send?phone=${formattedPhone}&text=${message}`;
-      
-      // Intentar abrir con el esquema nativo primero
       window.location.href = whatsappUrl;
-      
-      // Fallback: si después de 2.5 segundos no se abrió, usar wa.me
-      setTimeout(() => {
-        if (!document.hidden) {
-          window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-        }
-      }, 2500);
     } else {
       // En desktop, usar wa.me normalmente
       window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
